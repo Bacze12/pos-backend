@@ -5,10 +5,8 @@ import { Supplier } from './supplier.schema';
 
 @Injectable()
 export class SupplierService {
-  constructor(
-    @InjectModel(Supplier.name) private supplierModel: Model<Supplier>,
-  ) {}
-
+  constructor(@InjectModel(Supplier.name) private supplierModel: Model<Supplier>) {}
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   async findAll(tenantId: string, query: any): Promise<Supplier[]> {
     return this.supplierModel.find({ tenantId }).exec();
   }
@@ -17,11 +15,7 @@ export class SupplierService {
     return new this.supplierModel({ ...supplierData, tenantId }).save();
   }
 
-  async update(
-    tenantId: string,
-    supplierId: string,
-    updateData: any,
-  ): Promise<Supplier> {
+  async update(tenantId: string, supplierId: string, updateData: any): Promise<Supplier> {
     return this.supplierModel
       .findOneAndUpdate({ _id: supplierId, tenantId }, updateData, {
         new: true,

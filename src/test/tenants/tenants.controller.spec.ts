@@ -59,13 +59,9 @@ describe('TenantsController', () => {
     });
 
     it('debería lanzar un error si el servicio falla', async () => {
-      mockTenantsService.findAll.mockRejectedValue(
-        new Error('Error interno del servidor'),
-      );
+      mockTenantsService.findAll.mockRejectedValue(new Error('Error interno del servidor'));
 
-      await expect(controller.getTenants()).rejects.toThrow(
-        'Error interno del servidor',
-      );
+      await expect(controller.getTenants()).rejects.toThrow('Error interno del servidor');
     });
   });
 
@@ -90,13 +86,9 @@ describe('TenantsController', () => {
     });
 
     it('debería lanzar un error si el tenant ya existe', async () => {
-      mockTenantsService.create.mockRejectedValue(
-        new BadRequestException('El tenant ya existe'),
-      );
+      mockTenantsService.create.mockRejectedValue(new BadRequestException('El tenant ya existe'));
 
-      await expect(controller.createTenant(validTenantData)).rejects.toThrow(
-        'El tenant ya existe',
-      );
+      await expect(controller.createTenant(validTenantData)).rejects.toThrow('El tenant ya existe');
     });
 
     it('debería lanzar un error si los datos son inválidos', async () => {

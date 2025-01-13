@@ -1,9 +1,4 @@
-import {
-  Module,
-  MiddlewareConsumer,
-  NestModule,
-  forwardRef,
-} from '@nestjs/common';
+import { Module, MiddlewareConsumer, NestModule, forwardRef } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UserSchema } from './users.schema';
 import { UsersService } from './users.service';
@@ -25,6 +20,7 @@ import { jwtConfig } from '../../config/jwt.confg';
   exports: [UsersService, MongooseModule],
 })
 export class UsersModule implements NestModule {
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   configure(consumer: MiddlewareConsumer) {
     // Aplica el middleware TenantMiddleware solo a las rutas de UsersController
   }

@@ -1,9 +1,4 @@
-import {
-  Injectable,
-  UnauthorizedException,
-  Inject,
-  forwardRef,
-} from '@nestjs/common';
+import { Injectable, UnauthorizedException, Inject, forwardRef } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { TenantsService } from '../modules/tenants/tenants.service';
 import { UsersService } from '../modules/users/users.service';
@@ -20,10 +15,7 @@ export class AuthService {
 
   async login(businessName: string, email: string, password: string) {
     // Paso 1: Buscar en la colección de tenants
-    const tenant = await this.tenantsService.findByBusinessNameAndEmail(
-      businessName,
-      email,
-    );
+    const tenant = await this.tenantsService.findByBusinessNameAndEmail(businessName, email);
     if (tenant) {
       const isPasswordValid = verifyPassword(password, tenant.password);
       if (!isPasswordValid) {
@@ -44,8 +36,7 @@ export class AuthService {
     }
 
     // Paso 2: Buscar el tenant asociado al businessName
-    const tenantFromBusiness =
-      await this.tenantsService.findByBusinessName(businessName);
+    const tenantFromBusiness = await this.tenantsService.findByBusinessName(businessName);
     if (!tenantFromBusiness) {
       throw new UnauthorizedException('El negocio no existe');
     }

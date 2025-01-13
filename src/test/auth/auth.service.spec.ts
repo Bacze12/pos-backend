@@ -50,15 +50,12 @@ describe('AuthService', () => {
 
       mockJwtService.sign.mockReturnValue('mockToken');
 
-      const result = await service.login(
+      const result = await service.login('Test Business', 'test@test.com', 'password123');
+
+      expect(mockTenantsService.findByBusinessNameAndEmail).toHaveBeenCalledWith(
         'Test Business',
         'test@test.com',
-        'password123',
       );
-
-      expect(
-        mockTenantsService.findByBusinessNameAndEmail,
-      ).toHaveBeenCalledWith('Test Business', 'test@test.com');
       expect(mockJwtService.sign).toHaveBeenCalledWith({
         tenantId: 'mockTenantId',
         businessName: 'Test Business',
@@ -85,18 +82,13 @@ describe('AuthService', () => {
         role: 'USER',
       });
 
-      const result = await service.login(
+      const result = await service.login('Test Business', 'test@test.com', 'password123');
+
+      expect(mockTenantsService.findByBusinessNameAndEmail).toHaveBeenCalledWith(
         'Test Business',
         'test@test.com',
-        'password123',
       );
-
-      expect(
-        mockTenantsService.findByBusinessNameAndEmail,
-      ).toHaveBeenCalledWith('Test Business', 'test@test.com');
-      expect(mockTenantsService.findByBusinessName).toHaveBeenCalledWith(
-        'Test Business',
-      );
+      expect(mockTenantsService.findByBusinessName).toHaveBeenCalledWith('Test Business');
       expect(mockUsersService.findByEmailAndTenant).toHaveBeenCalledWith(
         'test@test.com',
         'mockTenantId',

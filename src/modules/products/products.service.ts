@@ -5,9 +5,7 @@ import { Product } from './products.schema';
 
 @Injectable()
 export class ProductsService {
-  constructor(
-    @InjectModel(Product.name) private readonly productModel: Model<Product>,
-  ) {}
+  constructor(@InjectModel(Product.name) private readonly productModel: Model<Product>) {}
 
   async findAll(tenantId: string, query: any) {
     return this.productModel.find({ tenantId, ...query }).exec();
@@ -23,16 +21,12 @@ export class ProductsService {
   }
 
   async updateProduct(tenantId: string, productId: string, updateData: any) {
-    return this.productModel.findOneAndUpdate(
-      { tenantId, _id: productId },
-      updateData,
-      { new: true },
-    );
+    return this.productModel.findOneAndUpdate({ tenantId, _id: productId }, updateData, {
+      new: true,
+    });
   }
 
   async deleteProduct(tenantId: string, productId: string) {
-    return this.productModel
-      .findOneAndDelete({ tenantId, _id: productId })
-      .exec();
+    return this.productModel.findOneAndDelete({ tenantId, _id: productId }).exec();
   }
 }

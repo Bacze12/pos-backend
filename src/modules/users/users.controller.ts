@@ -25,9 +25,7 @@ export class UsersController {
   private getTenantIdFromRequest(req): string {
     const tenantId = req.user?.tenantId;
     if (!tenantId) {
-      throw new UnauthorizedException(
-        'Falta tenantId en el contexto del usuario.',
-      );
+      throw new UnauthorizedException('Falta tenantId en el contexto del usuario.');
     }
     return tenantId;
   }
@@ -69,17 +67,9 @@ export class UsersController {
 
   @Put(':id')
   @Roles('ADMIN', 'MANAGER') // Ejemplo: ADMIN y MANAGER pueden actualizar
-  async updateUser(
-    @Req() req,
-    @Param('id') id: string,
-    @Body() updateData: any,
-  ) {
+  async updateUser(@Req() req, @Param('id') id: string, @Body() updateData: any) {
     const tenantId = this.getTenantIdFromRequest(req);
-    const updatedUser = await this.usersService.update(
-      id,
-      updateData,
-      tenantId,
-    );
+    const updatedUser = await this.usersService.update(id, updateData, tenantId);
     if (!updatedUser) {
       throw new NotFoundException('Usuario no encontrado');
     }
