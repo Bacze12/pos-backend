@@ -80,7 +80,7 @@
   "coverageDirectory": "../coverage",
   "testEnvironment": "node",
   "preset": "ts-jest"
-}
+},
 
   "engines": {
     "node": ">=16.9.0"
