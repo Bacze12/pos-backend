@@ -41,7 +41,7 @@ jobs:
         run: npm install
 
       - name: Run tests
-        run: npm run test -- --config=jest.config.js
+        run: npm run test -- --config=package.json
 
   build:
     runs-on: ubuntu-latest
