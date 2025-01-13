@@ -1,14 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Put,
-  Delete,
-  Body,
-  Param,
-  Query,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards } from '@nestjs/common';
 import { SupplierService } from './supplier.service';
 import { AuthGuard } from '@nestjs/passport';
 
@@ -23,10 +13,7 @@ export class SuppliersController {
   }
 
   @Post(':tenantId')
-  async createSupplier(
-    @Param('tenantId') tenantId: string,
-    @Body() supplierData: any,
-  ) {
+  async createSupplier(@Param('tenantId') tenantId: string, @Body() supplierData: any) {
     return this.suppliersService.create(tenantId, supplierData);
   }
 

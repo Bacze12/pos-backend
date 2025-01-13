@@ -3,6 +3,7 @@ import {
   NotFoundException,
   ConflictException,
   BadRequestException,
+  Logger,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -12,12 +13,10 @@ import { hashPassword } from '../../middleware/crypto.middleware';
 @Injectable()
 export class UsersService {
   constructor(@InjectModel(User.name) private userModel: Model<User>) {}
+  private readonly logger = new Logger(UsersService.name);
 
-  async findByEmailAndTenant(
-    email: string,
-    tenantId: string,
-  ): Promise<User | null> {
-    console.log(`Buscando usuario con email: ${email} y tenantId: ${tenantId}`);
+  async findByEmailAndTenant(email: string, tenantId: string): Promise<User | null> {
+    this.logger.log(`Buscando usuario con email: ${email} y tenantId: ${tenantId}`);
     return this.userModel.findOne({ email, tenantId }).exec();
   }
 
@@ -25,17 +24,15 @@ export class UsersService {
     if (!tenantId) {
       throw new NotFoundException('El tenantId es obligatorio.');
     }
-    console.log(`Buscando todos los usuarios del tenantId: ${tenantId}`);
+    this.logger.log(`Buscando todos los usuarios del tenantId: ${tenantId}`);
     return this.userModel.find({ tenantId }).exec();
   }
 
   async findById(id: string, tenantId: string) {
-    console.log(`Buscando usuario con id: ${id} y tenantId: ${tenantId}`);
+    this.logger.log(`Buscando usuario con id: ${id} y tenantId: ${tenantId}`);
     const user = await this.userModel.findOne({ _id: id, tenantId }).exec();
     if (!user) {
-      console.error(
-        `Usuario con id: ${id} no encontrado para tenantId: ${tenantId}`,
-      );
+      this.logger.error(`Usuario con id: ${id} no encontrado para tenantId: ${tenantId}`);
       throw new NotFoundException('Usuario no encontrado para este tenant.');
     }
     return user;
@@ -56,10 +53,7 @@ export class UsersService {
     if (userExists) {
       throw new ConflictException('El email ya está en uso para este tenant');
     }
-    console.log(
-      `Creando usuario para tenantId: ${userData.tenantId}`,
-      userData,
-    );
+    this.logger.log(`Creando usuario para tenantId: ${userData.tenantId}`, userData);
     try {
       // Hashea la contraseña antes de guardarla
       if (userData.password) {
@@ -70,13 +64,13 @@ export class UsersService {
       const savedUser = await newUser.save();
       return savedUser;
     } catch (error) {
-      console.error('Error al crear el usuario:', error.message);
+      this.logger.error('Error al crear el usuario:', error.message);
       throw new Error('Error al crear el usuario: ' + error.message);
     }
   }
 
   async update(id: string, updateData: any, tenantId: string) {
-    console.log(
+    this.logger.log(
       `Intentando actualizar usuario con id: ${id} para tenantId: ${tenantId}`,
       updateData,
     );
@@ -85,30 +79,22 @@ export class UsersService {
       .findOneAndUpdate({ _id: id, tenantId }, updateData, { new: true })
       .exec();
     if (!user) {
-      console.error(
-        `Usuario con id: ${id} no encontrado para tenantId: ${tenantId}`,
-      );
+      this.logger.error(`Usuario con id: ${id} no encontrado para tenantId: ${tenantId}`);
       throw new NotFoundException('Usuario no encontrado para este tenant.');
     }
-    console.log(`Usuario actualizado con éxito:`, user);
+    this.logger.log(`Usuario actualizado con éxito:`, user);
     return user;
   }
 
   async delete(id: string, tenantId: string) {
-    console.log(
-      `Intentando eliminar usuario con id: ${id} para tenantId: ${tenantId}`,
-    );
+    this.logger.log(`Intentando eliminar usuario con id: ${id} para tenantId: ${tenantId}`);
 
-    const user = await this.userModel
-      .findOneAndDelete({ _id: id, tenantId })
-      .exec();
+    const user = await this.userModel.findOneAndDelete({ _id: id, tenantId }).exec();
     if (!user) {
-      console.error(
-        `Usuario con id: ${id} no encontrado para tenantId: ${tenantId}`,
-      );
+      this.logger.error(`Usuario con id: ${id} no encontrado para tenantId: ${tenantId}`);
       throw new NotFoundException('Usuario no encontrado para este tenant.');
     }
-    console.log(`Usuario eliminado con éxito.`);
+    this.logger.log(`Usuario eliminado con éxito.`);
     return { message: 'Usuario eliminado con éxito' };
   }
 }

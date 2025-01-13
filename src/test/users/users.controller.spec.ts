@@ -76,19 +76,15 @@ describe('UsersController', () => {
     });
 
     it('debería lanzar un error si falta tenantId', async () => {
-      await expect(controller.getUsers({ user: {} })).rejects.toThrow(
-        UnauthorizedException,
-      );
+      await expect(controller.getUsers({ user: {} })).rejects.toThrow(UnauthorizedException);
     });
 
     it('debería lanzar un error si el servicio falla', async () => {
-      mockUsersService.findAllByTenant.mockRejectedValue(
-        new Error('Error interno del servidor'),
-      );
+      mockUsersService.findAllByTenant.mockRejectedValue(new Error('Error interno del servidor'));
 
-      await expect(
-        controller.getUsers({ user: { tenantId: 'mockTenantId' } }),
-      ).rejects.toThrow('Error interno del servidor');
+      await expect(controller.getUsers({ user: { tenantId: 'mockTenantId' } })).rejects.toThrow(
+        'Error interno del servidor',
+      );
     });
   });
 
@@ -101,10 +97,7 @@ describe('UsersController', () => {
         .build();
       mockUsersService.findById.mockResolvedValue(mockUser);
 
-      const result = await controller.getUserById(
-        { user: { tenantId: 'mockTenantId' } },
-        '1',
-      );
+      const result = await controller.getUserById({ user: { tenantId: 'mockTenantId' } }, '1');
 
       expect(service.findById).toHaveBeenCalledWith('1', 'mockTenantId');
       expect(result).toEqual(mockUser);
@@ -114,10 +107,7 @@ describe('UsersController', () => {
       mockUsersService.findById.mockResolvedValue(null);
 
       await expect(
-        controller.getUserById(
-          { user: { tenantId: 'mockTenantId' } },
-          'invalidId',
-        ),
+        controller.getUserById({ user: { tenantId: 'mockTenantId' } }, 'invalidId'),
       ).rejects.toThrow('Usuario no encontrado');
     });
   });
@@ -150,10 +140,7 @@ describe('UsersController', () => {
       const invalidUserDto = { name: '', email: 'not-an-email', password: '' };
 
       await expect(
-        controller.createUser(
-          { user: { tenantId: 'mockTenantId' } },
-          invalidUserDto,
-        ),
+        controller.createUser({ user: { tenantId: 'mockTenantId' } }, invalidUserDto),
       ).rejects.toThrow('Datos inválidos para el usuario');
     });
   });
@@ -166,17 +153,11 @@ describe('UsersController', () => {
         .build();
       mockUsersService.update.mockResolvedValue(mockUpdatedUser);
 
-      const result = await controller.updateUser(
-        { user: { tenantId: 'mockTenantId' } },
-        '1',
-        { name: 'Updated User' },
-      );
+      const result = await controller.updateUser({ user: { tenantId: 'mockTenantId' } }, '1', {
+        name: 'Updated User',
+      });
 
-      expect(service.update).toHaveBeenCalledWith(
-        '1',
-        { name: 'Updated User' },
-        'mockTenantId',
-      );
+      expect(service.update).toHaveBeenCalledWith('1', { name: 'Updated User' }, 'mockTenantId');
       expect(result).toEqual(mockUpdatedUser);
     });
 
@@ -184,11 +165,9 @@ describe('UsersController', () => {
       mockUsersService.update.mockResolvedValue(null);
 
       await expect(
-        controller.updateUser(
-          { user: { tenantId: 'mockTenantId' } },
-          'invalidId',
-          { name: 'Nonexistent User' },
-        ),
+        controller.updateUser({ user: { tenantId: 'mockTenantId' } }, 'invalidId', {
+          name: 'Nonexistent User',
+        }),
       ).rejects.toThrow('Usuario no encontrado');
     });
   });
@@ -198,10 +177,7 @@ describe('UsersController', () => {
       const mockResponse = { message: 'Usuario eliminado con éxito' };
       mockUsersService.delete.mockResolvedValue(mockResponse);
 
-      const result = await controller.deleteUser(
-        { user: { tenantId: 'mockTenantId' } },
-        '1',
-      );
+      const result = await controller.deleteUser({ user: { tenantId: 'mockTenantId' } }, '1');
 
       expect(service.delete).toHaveBeenCalledWith('1', 'mockTenantId');
       expect(result).toEqual(mockResponse);
@@ -211,10 +187,7 @@ describe('UsersController', () => {
       mockUsersService.delete.mockResolvedValue(null);
 
       await expect(
-        controller.deleteUser(
-          { user: { tenantId: 'mockTenantId' } },
-          'invalidId',
-        ),
+        controller.deleteUser({ user: { tenantId: 'mockTenantId' } }, 'invalidId'),
       ).rejects.toThrow('Usuario no encontrado');
     });
   });

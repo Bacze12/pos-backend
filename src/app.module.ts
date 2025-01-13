@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -19,7 +19,7 @@ dotenv.config();
     }),
     MongooseModule.forRootAsync({
       useFactory: (configService: ConfigService) => {
-        console.log('MONGO_URI from process.env:', process.env.MONGO_URI);
+        Logger.log('MONGO_URI from process.env:', process.env.MONGO_URI);
         return {
           uri: configService.get<string>('MONGO_URI'),
         };

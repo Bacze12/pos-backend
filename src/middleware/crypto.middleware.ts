@@ -9,9 +9,7 @@ export function generateRandomPassword(length: number = 16): string {
 export function hashPassword(password: string): string {
   const salt = crypto.randomBytes(32).toString('hex'); // Salt de 32 bytes
   const iterations = 310000; // Iteraciones según estándares modernos (310k recomendado por OWASP)
-  const hash = crypto
-    .pbkdf2Sync(password, salt, iterations, 64, 'sha512')
-    .toString('hex'); // Deriva el hash
+  const hash = crypto.pbkdf2Sync(password, salt, iterations, 64, 'sha512').toString('hex'); // Deriva el hash
   return `${salt}:${iterations}:${hash}`; // Formato: salt:iteraciones:hash
 }
 

@@ -1,9 +1,10 @@
-import { Controller, Post, Body, Get } from '@nestjs/common';
+import { Controller, Post, Body, Get, Logger } from '@nestjs/common';
 import { TenantsService } from './tenants.service';
 
 @Controller('tenants')
 export class TenantsController {
   constructor(private readonly tenantsService: TenantsService) {}
+  private readonly logger = new Logger(TenantsController.name);
 
   @Get()
   async getTenants() {
@@ -27,7 +28,7 @@ export class TenantsController {
         password: newTenant.password, // Uniforme con el servicio
       };
     } catch (error) {
-      console.error('Error al crear tenant:', error.message);
+      this.logger.error('Error al crear tenant:', error.message);
       throw error; // Mantén el mensaje original del servicio
     }
   }

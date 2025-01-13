@@ -5,11 +5,7 @@ import { SupplierService } from './supplier.service';
 import { SuppliersController } from './supplier.controller';
 
 @Module({
-  imports: [
-    MongooseModule.forFeature([
-      { name: Supplier.name, schema: SupplierSchema },
-    ]),
-  ],
+  imports: [MongooseModule.forFeature([{ name: Supplier.name, schema: SupplierSchema }])],
   controllers: [SuppliersController],
   providers: [SupplierService],
   exports: [SupplierService],

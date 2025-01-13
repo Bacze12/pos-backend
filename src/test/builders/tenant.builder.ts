@@ -19,11 +19,7 @@ export class TenantBuilder {
   }
 
   build(): Tenant {
-    if (
-      !this.tenant.businessName ||
-      !this.tenant.email ||
-      !this.tenant.password
-    ) {
+    if (!this.tenant.businessName || !this.tenant.email || !this.tenant.password) {
       throw new Error('Faltan propiedades obligatorias en el tenant.');
     }
     return this.tenant as Tenant;

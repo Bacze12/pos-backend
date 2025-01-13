@@ -1,12 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Param,
-  Query,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Query, UseGuards } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { AuthGuard } from '@nestjs/passport';
 
@@ -21,10 +13,7 @@ export class ProductsController {
   }
 
   @Post(':tenantId')
-  async createProduct(
-    @Param('tenantId') tenantId: string,
-    @Body() productData: any,
-  ) {
+  async createProduct(@Param('tenantId') tenantId: string, @Body() productData: any) {
     return this.productsService.create({ ...productData, tenantId });
   }
 }

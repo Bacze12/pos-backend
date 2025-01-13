@@ -4,6 +4,7 @@ import { TenantsService } from '../../modules/tenants/tenants.service';
 
 describe('TenantsController (Integration)', () => {
   let controller: TenantsController;
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   let service: TenantsService;
 
   const mockService = {
@@ -27,9 +28,7 @@ describe('TenantsController (Integration)', () => {
   });
 
   it('debería devolver todos los tenants', async () => {
-    const mockTenants = [
-      { businessName: 'Tenant1', email: 'tenant1@test.com' },
-    ];
+    const mockTenants = [{ businessName: 'Tenant1', email: 'tenant1@test.com' }];
     mockService.findAll.mockResolvedValue(mockTenants);
 
     const result = await controller.getTenants();

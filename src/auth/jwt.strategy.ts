@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, Logger } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { jwtConfig } from 'src/config/jwt.confg';
@@ -11,9 +11,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       secretOrKey: jwtConfig.secret,
     });
   }
+  private readonly logger = new Logger(JwtStrategy.name);
 
   async validate(payload: any) {
-    console.log('Validando token:', payload);
+    this.logger.log('Validando token:', payload);
 
     if (!payload || !payload.tenantId) {
       throw new UnauthorizedException('Token inválido - Falta tenantId');
@@ -25,7 +26,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       role: payload.role || 'USER', // Distingue entre USER y ADMIN
     };
 
-    console.log('Usuario validado:', user);
+    this.logger.log('Usuario validado:', user);
     return user;
   }
 }
