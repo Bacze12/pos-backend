@@ -26,6 +26,16 @@
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
+## Project Purpose and Features
+
+This project is a backend application for a Point of Sale (POS) system. It is built using the NestJS framework and TypeScript. The main features of this project include:
+
+- User authentication and authorization
+- Product management
+- Tenant management
+- Supplier management
+- Category management
+
 ## Project setup
 
 ```bash
@@ -70,6 +80,29 @@ $ mau deploy
 ```
 
 With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+
+## Common Issues and Troubleshooting
+
+### Issue: Application fails to start
+
+- **Solution:** Ensure that all environment variables are set correctly. Check the `.env` file for any missing or incorrect values.
+
+### Issue: Database connection error
+
+- **Solution:** Verify that the MongoDB server is running and accessible. Check the `MONGO_URI` in the `.env` file.
+
+### Issue: Authentication failure
+
+- **Solution:** Ensure that the login credentials are correct. Check the user and tenant data in the database.
+
+## API Documentation
+
+The API documentation for this project is generated using Swagger. To access the API documentation, follow these steps:
+
+1. Start the application by running `npm run start`.
+2. Open your web browser and navigate to `http://localhost:5000/api`.
+
+The Swagger UI will display the available endpoints and allow you to interact with the API.
 
 ## Resources
 
