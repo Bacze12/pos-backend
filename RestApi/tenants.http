@@ -1,0 +1,10 @@
+@url = http://localhost:5000/tenants
+
+### Crear tenant
+POST {{url}}
+Content-Type: application/json
+
+{
+    "businessName": "John Doe",
+    "email":"john@gmail.com"
+}

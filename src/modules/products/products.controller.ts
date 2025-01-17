@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, UnauthorizedException, Req } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { AuthGuard } from '@nestjs/passport';
 
@@ -7,13 +7,23 @@ import { AuthGuard } from '@nestjs/passport';
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
-  @Get(':tenantId')
-  async getProducts(@Param('tenantId') tenantId: string, @Query() query: any) {
-    return this.productsService.findAll(tenantId, query);
+  private getTenantIdFromRequest(req): string {
+    const tenantId = req.user?.tenantId;
+    if (!tenantId) {
+      throw new UnauthorizedException('Falta tenantId en el contexto del usuario.');
+    }
+    return tenantId;
   }
 
-  @Post(':tenantId')
-  async createProduct(@Param('tenantId') tenantId: string, @Body() productData: any) {
+  @Get('')
+  async getProducts(@Req() req) {
+    const tenantId = this.getTenantIdFromRequest(req);
+    return this.productsService.findAll(tenantId);
+  }
+
+  @Post('')
+  async createProduct(@Req() req, @Body() productData: any) {
+    const tenantId = this.getTenantIdFromRequest(req);
     return this.productsService.create({ ...productData, tenantId });
   }
 }

@@ -1,0 +1,14 @@
+@jwtToken= eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZW5hbnRJZCI6IjY3OGFhNGNhNTQzNDAyOGY2NTViYWVjOCIsImJ1c2luZXNzTmFtZSI6IkpvaG4gRG9lIiwiZW1haWwiOiJqb2huQGdtYWlsLmNvbSIsInJvbGUiOiJBRE1JTiIsImlhdCI6MTczNzEzOTQ0NiwiZXhwIjoxNzM3MjI1ODQ2fQ.ENVF00OWd2G4IoFP8OXJzUmumQxRswF_fGBmorkfviM
+@url = http://localhost:5000/suppliers
+
+### Create Supplier
+POST {{url}}
+Content-Type: application/json
+Authorization: Bearer {{jwtToken}}
+
+{
+  "name": "Proveedor Ejemplo",
+  "email": "example@gmail.com",
+  "phone": "+123456789",
+  "address": "Calle Falsa 123"
+}

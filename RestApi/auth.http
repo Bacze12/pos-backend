@@ -1,0 +1,21 @@
+@password = 22c686ea535d7e238e37f7f97c4e83ba
+
+### Login 
+POST http://localhost:5000/auth/login
+Content-Type: application/json
+
+{
+  "businessName": "John Doe",
+  "email": "john@gmail.com",
+  "password": "{{password}}"
+}
+
+### Login Admin
+POST http://localhost:5000/auth/login
+Content-Type: application/json
+
+{
+  "businessName": "Pelaitopaez2",
+  "email": "papa2@gmail.com",
+  "password": "a3b8616138ad655b3e84b52c371eb951"
+}

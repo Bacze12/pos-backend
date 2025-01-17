@@ -10,6 +10,11 @@ import { UsersModule } from './modules/users/user.module';
 import * as dotenv from 'dotenv';
 import { MongooseModule } from '@nestjs/mongoose';
 import { RolesGuard } from './common/guard/roles.guard';
+import { CategoriesModule } from './modules/category/category.module';
+import { SupplierModule } from './modules/supplier/supplier.module';
+import { SalesModule } from './modules/sales/sales.module';
+import { SaleItemModule } from './modules/saleItem/saleItem.module';
+import { ShiftModule } from './modules/shift/shift.module';
 dotenv.config();
 
 @Module({
@@ -27,10 +32,15 @@ dotenv.config();
       inject: [ConfigService],
     }),
     DatabaseModule,
-    ProductsModule,
     TenantsModule,
     AuthModule,
     UsersModule,
+    CategoriesModule,
+    SupplierModule,
+    ProductsModule,
+    SalesModule,
+    SaleItemModule,
+    ShiftModule,
   ],
   controllers: [AppController],
   providers: [AppService, RolesGuard],

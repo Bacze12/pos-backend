@@ -1,0 +1,49 @@
+@url = http://localhost:5000/users
+@jwtToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZW5hbnRJZCI6IjY3OGFhNGNhNTQzNDAyOGY2NTViYWVjOCIsImJ1c2luZXNzTmFtZSI6IkpvaG4gRG9lIiwiZW1haWwiOiJqb2huQGdtYWlsLmNvbSIsInJvbGUiOiJBRE1JTiIsImlhdCI6MTczNzEzOTQ0NiwiZXhwIjoxNzM3MjI1ODQ2fQ.ENVF00OWd2G4IoFP8OXJzUmumQxRswF_fGBmorkfviM
+
+### Login User
+POST http://localhost:5000/auth/login
+Content-Type: application/json
+Authorization: Bearer {{jwtToken}}
+
+{
+    "email":"test1@gmail.com",
+    "businessName":"John Doe",
+    "password":"password"
+}
+
+### Create User
+POST {{url}}
+Content-Type: application/json
+Authorization: Bearer {{jwtToken}}
+
+{
+    "name": "John Doe",
+    "email": "test1@gmail.com",
+    "password": "password",
+    "role":"ADMIN"
+}
+
+### Get Users
+GET {{url}}
+Content-Type: application/json
+Authorization: Bearer {{jwtToken}}
+
+### Get User by ID
+GET {{url}}/6786d9b06e0e6e70d5f90b0b
+Content-Type: application/json
+Authorization:  Bearer {{jwtToken}}
+
+### Update User
+PATCH {{url}}/6786d9b06e0e6e70d5f90b0b
+Content-Type: application/json
+Authorization: Bearer {{jwtToken}}
+
+{
+    "email": "John2@gmail.com"
+    }
+
+### Delete User
+DELETE {{url}}/6786d9b06e0e6e70d5f90b0b
+Content-Type: application/json
+Authorization: Bearer {{jwtToken}}
