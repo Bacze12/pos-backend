@@ -1,0 +1,22 @@
+@jwtToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZW5hbnRJZCI6IjY3OGFhNGNhNTQzNDAyOGY2NTViYWVjOCIsImJ1c2luZXNzTmFtZSI6IkpvaG4gRG9lIiwiZW1haWwiOiJqb2huQGdtYWlsLmNvbSIsInJvbGUiOiJBRE1JTiIsImlhdCI6MTczNzEzOTQ0NiwiZXhwIjoxNzM3MjI1ODQ2fQ.ENVF00OWd2G4IoFP8OXJzUmumQxRswF_fGBmorkfviM
+@currentTime = 2025-01-16T20:00:00Z
+@shiftId = 678aaa635434028f655baed7
+
+### Crear Caja (Shift)
+POST http://localhost:5000/shifts
+Authorization: Bearer {{jwtToken}}
+Content-Type: application/json
+
+{
+  "initialCash": 500.0,
+  "startTime": "{{currentTime}}"
+}
+
+### Cerrar Caja (Shift)
+PATCH http://localhost:5000/shifts/{{shiftId}}/close
+Authorization: Bearer {{jwtToken}}
+Content-Type: application/json
+
+{
+  "finalCash": 1000.0
+}

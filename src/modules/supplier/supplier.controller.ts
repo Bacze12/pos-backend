@@ -1,4 +1,15 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Body,
+  Param,
+  UseGuards,
+  UnauthorizedException,
+  Req,
+} from '@nestjs/common';
 import { SupplierService } from './supplier.service';
 import { AuthGuard } from '@nestjs/passport';
 
@@ -7,13 +18,23 @@ import { AuthGuard } from '@nestjs/passport';
 export class SuppliersController {
   constructor(private readonly suppliersService: SupplierService) {}
 
-  @Get(':tenantId')
-  async getSuppliers(@Param('tenantId') tenantId: string, @Query() query: any) {
-    return this.suppliersService.findAll(tenantId, query);
+  private getTenantIdFromRequest(req): string {
+    const tenantId = req.user?.tenantId;
+    if (!tenantId) {
+      throw new UnauthorizedException('Falta tenantId en el contexto del usuario.');
+    }
+    return tenantId;
   }
 
-  @Post(':tenantId')
-  async createSupplier(@Param('tenantId') tenantId: string, @Body() supplierData: any) {
+  @Get('')
+  async getSuppliers(@Req() req) {
+    const tenantId = this.getTenantIdFromRequest(req);
+    return this.suppliersService.findAll(tenantId);
+  }
+
+  @Post('')
+  async createSupplier(@Req() req, @Body() supplierData: any) {
+    const tenantId = this.getTenantIdFromRequest(req);
     return this.suppliersService.create(tenantId, supplierData);
   }
 

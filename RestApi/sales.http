@@ -1,0 +1,24 @@
+@jwtToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZW5hbnRJZCI6IjY3OGFhNGNhNTQzNDAyOGY2NTViYWVjOCIsImJ1c2luZXNzTmFtZSI6IkpvaG4gRG9lIiwiZW1haWwiOiJqb2huQGdtYWlsLmNvbSIsInJvbGUiOiJBRE1JTiIsImlhdCI6MTczNzEzOTQ0NiwiZXhwIjoxNzM3MjI1ODQ2fQ.ENVF00OWd2G4IoFP8OXJzUmumQxRswF_fGBmorkfviM
+@productId = 678aaa385434028f655baed3
+@shiftId = 678aaa635434028f655baed7
+
+### Crear Venta (Sale)
+POST http://localhost:5000/sales
+Authorization: Bearer {{jwtToken}}
+Content-Type: application/json
+
+{
+  "shift": "{{shiftId}}",
+  
+  "items": [
+    {
+      "product": "{{productId}}",
+      "quantity": 2,
+      "price": 1500.0,
+      "totalPrice": 3000.0
+    }
+  ],
+  "total": 3000.0,
+  "paymentMethod": "CASH",
+  "status": "COMPLETED"
+}

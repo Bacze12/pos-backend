@@ -6,9 +6,7 @@ import { Category } from './category.schema';
 
 @Injectable()
 export class CategoryService {
-  constructor(
-    @InjectModel(Category.name) private readonly categoryModel: Model<Category>,
-  ) {}
+  constructor(@InjectModel(Category.name) private readonly categoryModel: Model<Category>) {}
 
   async findAll(tenantId: string) {
     return this.categoryModel.find({ tenantId, isActive: true });
@@ -19,19 +17,17 @@ export class CategoryService {
     return newCategory.save();
   }
 
-  async update(id: string, updateCategoryDto: any) {
-    const category = await this.categoryModel.findByIdAndUpdate(
-      id,
-      updateCategoryDto,
-      { new: true },
-    );
+  async update(id: string, updateCategoryDto: any, tenantId: string) {
+    const category = await this.categoryModel.findByIdAndUpdate(id, updateCategoryDto, {
+      new: true,
+    });
     if (!category) {
       throw new NotFoundException('Category not found');
     }
     return category;
   }
 
-  async remove(id: string) {
+  async remove(id: string, tenantId: string) {
     const category = await this.categoryModel.findByIdAndUpdate(
       id,
       { isActive: false },

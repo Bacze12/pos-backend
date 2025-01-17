@@ -1,0 +1,37 @@
+@jwtToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZW5hbnRJZCI6IjY3OGFhNGNhNTQzNDAyOGY2NTViYWVjOCIsImJ1c2luZXNzTmFtZSI6IkpvaG4gRG9lIiwiZW1haWwiOiJqb2huQGdtYWlsLmNvbSIsInJvbGUiOiJBRE1JTiIsImlhdCI6MTczNzEzOTQ0NiwiZXhwIjoxNzM3MjI1ODQ2fQ.ENVF00OWd2G4IoFP8OXJzUmumQxRswF_fGBmorkfviM
+@url = http://localhost:5000/categories
+
+### Create Category
+POST {{url}}
+Content-Type: application/json
+Authorization:  Bearer {{jwtToken}}
+
+{
+    "name": "Category 1",
+    "description": "Category 1 description"
+}
+
+### Get Categories
+GET {{url}}
+Content-Type: application/json
+Authorization: Bearer {{jwtToken}}
+
+### Get Category by ID (NO EXISTE)
+GET {{url}}/678744e782cadd3f5ca5da81
+Content-Type: application/json
+Authorization: Bearer {{jwtToken}}
+
+### Update Category 
+PATCH {{url}}/678744e782cadd3f5ca5da81
+Content-Type: application/json
+Authorization: Bearer {{jwtToken}}
+
+{
+    "isActive": true
+}
+
+### Delete Category
+DELETE {{url}}/678744e782cadd3f5ca5da81
+Content-Type: application/json
+Authorization: Bearer {{jwtToken}}
+

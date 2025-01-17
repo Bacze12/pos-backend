@@ -2,7 +2,6 @@ import {
   Controller,
   Get,
   Post,
-  Put,
   Delete,
   Param,
   Body,
@@ -11,6 +10,7 @@ import {
   UnauthorizedException,
   NotFoundException,
   BadRequestException,
+  Patch,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { UsersService } from './users.service';
@@ -65,7 +65,7 @@ export class UsersController {
     return this.usersService.create(userDataWithTenant);
   }
 
-  @Put(':id')
+  @Patch(':id')
   @Roles('ADMIN', 'MANAGER') // Ejemplo: ADMIN y MANAGER pueden actualizar
   async updateUser(@Req() req, @Param('id') id: string, @Body() updateData: any) {
     const tenantId = this.getTenantIdFromRequest(req);

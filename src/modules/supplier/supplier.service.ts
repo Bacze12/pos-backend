@@ -7,7 +7,7 @@ import { Supplier } from './supplier.schema';
 export class SupplierService {
   constructor(@InjectModel(Supplier.name) private supplierModel: Model<Supplier>) {}
   /* eslint-disable @typescript-eslint/no-unused-vars */
-  async findAll(tenantId: string, query: any): Promise<Supplier[]> {
+  async findAll(tenantId: string): Promise<Supplier[]> {
     return this.supplierModel.find({ tenantId }).exec();
   }
 
