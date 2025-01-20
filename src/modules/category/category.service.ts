@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -18,9 +17,11 @@ export class CategoryService {
   }
 
   async update(id: string, updateCategoryDto: any, tenantId: string) {
-    const category = await this.categoryModel.findByIdAndUpdate(id, updateCategoryDto, {
-      new: true,
-    });
+    const category = await this.categoryModel.findByIdAndUpdate(
+      id,
+      { ...updateCategoryDto, tenantId },
+      { new: true },
+    );
     if (!category) {
       throw new NotFoundException('Category not found');
     }
@@ -29,7 +30,7 @@ export class CategoryService {
 
   async remove(id: string, tenantId: string) {
     const category = await this.categoryModel.findByIdAndUpdate(
-      id,
+      { _id: id, tenantId },
       { isActive: false },
       { new: true },
     );
