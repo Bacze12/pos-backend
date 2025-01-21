@@ -25,7 +25,7 @@ async function bootstrap() {
 
   app.enableCors({
   origin: 'https://inventory-pos-frontend.vercel.app',
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  methods: ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: [
     'Content-Type', 
     'Authorization', 
@@ -35,10 +35,7 @@ async function bootstrap() {
     'Access-Control-Allow-Origin',
     'Access-Control-Allow-Credentials'
   ],
-  exposedHeaders: ['Authorization'],
-  credentials: true,
-  preflightContinue: false,
-  optionsSuccessStatus: 204
+  credentials: false
 });
   // Configurar Swagger
   const config = new DocumentBuilder()
@@ -70,15 +67,6 @@ async function bootstrap() {
   app.use(urlencoded({ limit: '1mb', extended: true }));
 
   app.useGlobalFilters(new HttpErrorFilter());
-  app.use((req, res, next) => {
-    if (req.method === 'OPTIONS') {
-      res.header('Access-Control-Allow-Origin', 'https://inventory-pos-frontend.vercel.app');
-      res.header('Access-Control-Allow-Methods', 'GET,HEAD,PUT,PATCH,POST,DELETE');
-      res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-      return res.status(204).send();
-    }
-    next();
-  });
 
   // Monitoreo periódico de memoria
   setInterval(logMemoryUsage, 300000); // cada 5 minutos
