@@ -24,10 +24,12 @@ async function bootstrap() {
   });
 
   app.enableCors({
-    origin: 'https://inventory-pos-frontend.vercel.app', // Dominios permitidos
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE', // Métodos HTTP permitidos
-    allowedHeaders: 'Content-Type, Authorization, Accept, Origin, X-Requested-With', // Headers permitidos
-    credentials: true, // Habilitar cookies si es necesario
+    origin: 'https://inventory-pos-frontend.vercel.app',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
+    credentials: true,
+    preflightContinue: false,
+    optionsSuccessStatus: 204
   });
 
   // Configurar Swagger
