@@ -1,4 +1,4 @@
-@jwtToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZW5hbnRJZCI6IjY3OGFhNGNhNTQzNDAyOGY2NTViYWVjOCIsImJ1c2luZXNzTmFtZSI6IkpvaG4gRG9lIiwiZW1haWwiOiJqb2huQGdtYWlsLmNvbSIsInJvbGUiOiJBRE1JTiIsImlhdCI6MTczNzEzOTQ0NiwiZXhwIjoxNzM3MjI1ODQ2fQ.ENVF00OWd2G4IoFP8OXJzUmumQxRswF_fGBmorkfviM
+@jwtToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZW5hbnRJZCI6IjY3OGFhNGNhNTQzNDAyOGY2NTViYWVjOCIsImJ1c2luZXNzTmFtZSI6IkpvaG4gRG9lIiwiZW1haWwiOiJqb2huQGdtYWlsLmNvbSIsInJvbGUiOiJBRE1JTiIsImlhdCI6MTczNzQyMDA5MiwiZXhwIjoxNzM3NTA2NDkyfQ.uB1i1Z5GXKqliPRKlzJCefD0FDPhoQK9SQkmQhjM7_Y
 @url = http://localhost:5000/categories
 
 ### Create Category
@@ -7,7 +7,7 @@ Content-Type: application/json
 Authorization:  Bearer {{jwtToken}}
 
 {
-    "name": "Category 1",
+    "name": "Category 10",
     "description": "Category 1 description"
 }
 
