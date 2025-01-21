@@ -69,7 +69,6 @@ This project uses Jest as the testing framework. The Jest configuration can be f
 
 - **Coverage Reports:** If you run the tests with coverage (`npm run test:cov`), Jest will generate a coverage report. The report shows the percentage of code covered by tests, including statements, branches, functions, and lines. The coverage report can be found in the `coverage` directory.
 
-
 ## Adding New Tests
 
 To add new tests to the project, follow these steps:

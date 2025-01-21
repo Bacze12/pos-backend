@@ -1,13 +1,14 @@
 @password = 22c686ea535d7e238e37f7f97c4e83ba
+@password2 = ff6173272bd3567f78e5e50e61349432
 
 ### Login 
 POST http://localhost:5000/auth/login
 Content-Type: application/json
 
 {
-  "businessName": "John Doe",
-  "email": "john@gmail.com",
-  "password": "{{password}}"
+  "businessName": "wilson",
+  "email": "wilson@gmail.com",
+  "password": "{{password2}}"
 }
 
 ### Login Admin

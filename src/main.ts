@@ -21,6 +21,12 @@ async function bootstrap() {
     logger: ['log', 'error', 'warn', 'debug', 'verbose'],
   });
 
+  app.enableCors({
+    origin: 'https://inventory-pos-frontend.vercel.app', // Dominios permitidos
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE', // Métodos HTTP permitidos
+    allowedHeaders: 'Content-Type, Authorization', // Headers permitidos
+    credentials: true, // Habilitar cookies si es necesario
+  });
   // Comprimir respuestas
   app.use(compression());
 
