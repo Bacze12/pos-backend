@@ -1,7 +1,11 @@
 import { Controller, Get, Post, Body, UseGuards, UnauthorizedException, Req } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { AuthGuard } from '@nestjs/passport';
+import { CreateProductDto } from './products.dto';
+import { ApiBearerAuth, ApiTags, ApiResponse, ApiOperation } from '@nestjs/swagger';
 
+@ApiTags('products')
+@ApiBearerAuth()
 @Controller('products')
 @UseGuards(AuthGuard('jwt'))
 export class ProductsController {
@@ -16,13 +20,32 @@ export class ProductsController {
   }
 
   @Get('')
+  @ApiOperation({
+    summary: 'Obtener todos los productos',
+    description: 'Devuelve una lista de productos para el tenant actual.',
+  })
+  @ApiResponse({ status: 200, description: 'Productos recuperados con éxito.' })
+  @ApiResponse({
+    status: 401,
+    description: 'No autorizado. Falta el tenantId o el token JWT es inválido.',
+  })
   async getProducts(@Req() req) {
     const tenantId = this.getTenantIdFromRequest(req);
     return this.productsService.findAll(tenantId);
   }
 
   @Post('')
-  async createProduct(@Req() req, @Body() productData: any) {
+  @ApiOperation({
+    summary: 'Crear un nuevo producto',
+    description: 'Crea un producto asociado al tenant actual.',
+  })
+  @ApiResponse({ status: 201, description: 'Producto creado con éxito.' })
+  @ApiResponse({ status: 400, description: 'Datos de entrada inválidos.' })
+  @ApiResponse({
+    status: 401,
+    description: 'No autorizado. Falta el tenantId o el token JWT es inválido.',
+  })
+  async createProduct(@Req() req, @Body() productData: CreateProductDto) {
     const tenantId = this.getTenantIdFromRequest(req);
     return this.productsService.create({ ...productData, tenantId });
   }

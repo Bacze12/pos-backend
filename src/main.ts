@@ -5,6 +5,8 @@ import { HttpErrorFilter } from './filters/http-error.filter';
 import compression from 'compression';
 import { Logger } from '@nestjs/common';
 import { json, urlencoded } from 'express';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import * as fs from 'fs';
 
 const logger = new Logger('Memory');
 
@@ -27,6 +29,29 @@ async function bootstrap() {
     allowedHeaders: 'Content-Type, Authorization, Accept, Origin, X-Requested-With', // Headers permitidos
     credentials: true, // Habilitar cookies si es necesario
   });
+
+  // Configurar Swagger
+  const config = new DocumentBuilder()
+    .setTitle('Inventory POS API')
+    .setDescription('API para el sistema de inventario y punto de venta')
+    .setVersion('1.0')
+    .addTag('inventory')
+    .addBearerAuth()
+    .build();
+  const document = SwaggerModule.createDocument(app, config);
+
+  // Guardar el JSON generado por Swagger en un archivo
+  const swaggerJsonPath = './swagger.json';
+  fs.writeFileSync(swaggerJsonPath, JSON.stringify(document, null, 2));
+
+  SwaggerModule.setup('api', app, document);
+
+  // Endpoint para descargar el archivo JSON
+  app.getHttpAdapter().get('/swagger-json', (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+    res.download(swaggerJsonPath, 'swagger.json');
+  });
+
   // Comprimir respuestas
   app.use(compression());
 
@@ -44,6 +69,7 @@ async function bootstrap() {
     }
     next();
   });
+
   // Monitoreo periódico de memoria
   setInterval(logMemoryUsage, 300000); // cada 5 minutos
 
@@ -51,7 +77,7 @@ async function bootstrap() {
   const heapLimit = 450; // 450MB para Railway free tier
   process.env.NODE_OPTIONS = `--max-old-space-size=${heapLimit}`;
 
-  Logger.log('Application is starting with all endpoitns being tracked');
+  Logger.log('Application is starting with all endpoints being tracked');
   await app.listen(process.env.PORT ?? 5000);
 }
 bootstrap();
