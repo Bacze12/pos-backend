@@ -15,6 +15,11 @@ import { SupplierModule } from './modules/supplier/supplier.module';
 import { SalesModule } from './modules/sales/sales.module';
 import { SaleItemModule } from './modules/saleItem/saleItem.module';
 import { ShiftModule } from './modules/shift/shift.module';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { MemoryTrackingInterceptor } from './interceptor/memory-tracking.interceptor';
+import { MetricsService } from './metrics.service';
+import { MetricsController } from './metrics.controller';
+
 dotenv.config();
 
 @Module({
@@ -42,7 +47,15 @@ dotenv.config();
     SaleItemModule,
     ShiftModule,
   ],
-  controllers: [AppController],
-  providers: [AppService, RolesGuard],
+  controllers: [AppController, MetricsController],
+  providers: [
+    AppService,
+    RolesGuard,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: MemoryTrackingInterceptor,
+    },
+    MetricsService,
+  ],
 })
 export class AppModule {}
