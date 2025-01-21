@@ -24,7 +24,7 @@ async function bootstrap() {
   app.enableCors({
     origin: 'https://inventory-pos-frontend.vercel.app', // Dominios permitidos
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE', // Métodos HTTP permitidos
-    allowedHeaders: 'Content-Type, Authorization', // Headers permitidos
+    allowedHeaders: 'Content-Type, Authorization, Accept, Origin, X-Requested-With', // Headers permitidos
     credentials: true, // Habilitar cookies si es necesario
   });
   // Comprimir respuestas
@@ -35,7 +35,15 @@ async function bootstrap() {
   app.use(urlencoded({ limit: '1mb', extended: true }));
 
   app.useGlobalFilters(new HttpErrorFilter());
-
+  app.use((req, res, next) => {
+    if (req.method === 'OPTIONS') {
+      res.header('Access-Control-Allow-Origin', 'https://inventory-pos-frontend.vercel.app');
+      res.header('Access-Control-Allow-Methods', 'GET,HEAD,PUT,PATCH,POST,DELETE');
+      res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+      return res.status(204).send();
+    }
+    next();
+  });
   // Monitoreo periódico de memoria
   setInterval(logMemoryUsage, 300000); // cada 5 minutos
 
