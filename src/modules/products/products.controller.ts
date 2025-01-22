@@ -1,4 +1,14 @@
-import { Controller, Get, Post, Body, UseGuards, UnauthorizedException, Req } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  UseGuards,
+  UnauthorizedException,
+  Req,
+  BadRequestException,
+  Logger,
+} from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { AuthGuard } from '@nestjs/passport';
 import { CreateProductDto } from './products.dto';
@@ -47,6 +57,22 @@ export class ProductsController {
   })
   async createProduct(@Req() req, @Body() productData: CreateProductDto) {
     const tenantId = this.getTenantIdFromRequest(req);
-    return this.productsService.create({ ...productData, tenantId });
+
+    try {
+      const createdProduct = await this.productsService.create({
+        ...productData,
+        tenantId,
+      });
+
+      // Responder con el producto creado y un código HTTP 201
+      return {
+        statusCode: 201,
+        message: 'Producto creado con éxito.',
+        data: createdProduct,
+      };
+    } catch (error) {
+      Logger.error('Error al crear el producto:', error.message);
+      throw new BadRequestException(error.message || 'Error al crear el producto.');
+    }
   }
 }
