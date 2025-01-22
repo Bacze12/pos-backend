@@ -9,13 +9,13 @@ export class CreateProductDto {
 
   @ApiProperty({ description: 'Precio de compra', example: 1000 })
   @IsNumber()
-  @IsOptional()
-  purchasePrice?: number;
+  @IsNotEmpty()
+  purchasePrice: number;
 
   @ApiProperty({ description: 'Porcentaje de margen', example: 20 })
   @IsNumber()
-  @IsOptional()
-  marginPercent?: number;
+  @IsNotEmpty()
+  marginPercent: number;
 
   @ApiProperty({ description: 'Exento de IVA', example: false })
   @IsBoolean()
@@ -34,8 +34,8 @@ export class CreateProductDto {
 
   @ApiProperty({ description: 'ID del proveedor', example: '63f1b23c9a7d2e1234abcd56' })
   @IsString()
-  @IsOptional()
-  supplier?: string;
+  @IsNotEmpty()
+  supplier: string;
 
   @ApiProperty({ description: 'Cantidad en stock', example: 50 })
   @IsNumber()
