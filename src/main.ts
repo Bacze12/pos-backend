@@ -24,17 +24,11 @@ async function bootstrap() {
   });
 
   app.enableCors({
-  origin: ['https://inventory-pos-frontend.vercel.app'],
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: [
-    'Content-Type', 
-    'Authorization', 
-    'Accept', 
-    'Origin', 
-    'X-Requested-With'
-  ],
-  credentials: true
-});
+    origin: ['https://inventory-pos-frontend.vercel.app'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
+    credentials: true,
+  });
   // Configurar Swagger
   const config = new DocumentBuilder()
     .setTitle('Inventory POS API')

@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
+import { IsString, IsNotEmpty, IsNumber, IsOptional, IsBoolean } from 'class-validator';
 
 export class CreateProductDto {
   @ApiProperty({ description: 'Nombre del producto', example: 'Laptop' })
@@ -7,37 +7,43 @@ export class CreateProductDto {
   @IsNotEmpty()
   name: string;
 
-  @ApiProperty({ description: 'Precio del producto', example: 999.99 })
+  @ApiProperty({ description: 'Precio de compra', example: 1000 })
   @IsNumber()
-  @IsNotEmpty()
-  price: number;
+  @IsOptional()
+  purchasePrice?: number;
 
-  @ApiProperty({
-    description: 'ID de la categoría del producto',
-    example: '63f1b23c9a7d2e1234abcd56',
-  })
+  @ApiProperty({ description: 'Porcentaje de margen', example: 20 })
+  @IsNumber()
+  @IsOptional()
+  marginPercent?: number;
+
+  @ApiProperty({ description: 'Exento de IVA', example: false })
+  @IsBoolean()
+  @IsOptional()
+  isIvaExempt?: boolean;
+
+  @ApiProperty({ description: 'Tiene impuesto extra', example: false })
+  @IsBoolean()
+  @IsOptional()
+  hasExtraTax?: boolean;
+
+  @ApiProperty({ description: 'Tasa de impuesto extra', example: 15 })
+  @IsNumber()
+  @IsOptional()
+  extraTaxRate?: number;
+
+  @ApiProperty({ description: 'ID del proveedor', example: '63f1b23c9a7d2e1234abcd56' })
+  @IsString()
+  @IsOptional()
+  supplier?: string;
+
+  @ApiProperty({ description: 'Cantidad en stock', example: 50 })
+  @IsNumber()
+  @IsOptional()
+  stock?: number;
+
+  @ApiProperty({ description: 'ID de la categoría', example: '63f1b23c9a7d2e1234abcd56' })
   @IsString()
   @IsNotEmpty()
   categoryId: string;
-}
-
-export class UpdateProductDto {
-  @ApiProperty({ description: 'Nombre del producto', example: 'Laptop', required: false })
-  @IsString()
-  @IsOptional()
-  name?: string;
-
-  @ApiProperty({ description: 'Precio del producto', example: 999.99, required: false })
-  @IsNumber()
-  @IsOptional()
-  price?: number;
-
-  @ApiProperty({
-    description: 'ID de la categoría del producto',
-    example: '63f1b23c9a7d2e1234abcd56',
-    required: false,
-  })
-  @IsString()
-  @IsOptional()
-  categoryId?: string;
 }
