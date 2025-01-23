@@ -17,6 +17,11 @@ export class AuthService {
     // Paso 1: Buscar en la colección de tenants
     const tenant = await this.tenantsService.findByBusinessNameAndEmail(businessName, email);
     if (tenant) {
+      // Validar si el tenant está activo
+      if (!tenant.isActive) {
+        throw new UnauthorizedException('El negocio está inactivo. Contacte al administrador.');
+      }
+
       const isPasswordValid = verifyPassword(password, tenant.password);
       if (!isPasswordValid) {
         throw new UnauthorizedException('Credenciales inválidas');
@@ -48,6 +53,11 @@ export class AuthService {
     );
     if (!user) {
       throw new UnauthorizedException('Usuario no encontrado');
+    }
+
+    // Validar si el usuario está activo
+    if (!user.isActive) {
+      throw new UnauthorizedException('El usuario está inactivo. Contacte al administrador.');
     }
 
     // Paso 4: Verificar la contraseña del usuario

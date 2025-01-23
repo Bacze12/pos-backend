@@ -11,6 +11,9 @@ export class Tenant extends Document {
 
   @Prop({ required: true })
   password: string; // La contraseña debe ser almacenada de forma segura (hashed)
+
+  @Prop({ default: true })
+  isActive: boolean;
 }
 
 export const TenantSchema = SchemaFactory.createForClass(Tenant);
