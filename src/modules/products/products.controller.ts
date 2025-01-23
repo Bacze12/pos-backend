@@ -8,6 +8,8 @@ import {
   Req,
   BadRequestException,
   Logger,
+  Param,
+  Delete,
 } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { AuthGuard } from '@nestjs/passport';
@@ -73,6 +75,28 @@ export class ProductsController {
     } catch (error) {
       Logger.error('Error al crear el producto:', error.message);
       throw new BadRequestException(error.message || 'Error al crear el producto.');
+    }
+  }
+
+  @Delete(':id')
+  @ApiOperation({
+    summary: 'Eliminar un producto',
+    description: 'Elimina un producto asociado al tenant actual.',
+  })
+  @ApiResponse({ status: 200, description: 'Producto eliminado con éxito.' })
+  @ApiResponse({ status: 400, description: 'Error al eliminar el producto.' })
+  async remove(@Req() req, @Param('id') id: string) {
+    const tenantId = this.getTenantIdFromRequest(req);
+
+    try {
+      await this.productsService.deleteProduct(tenantId, id);
+      return {
+        statusCode: 200,
+        message: 'Producto eliminado con éxito.',
+      };
+    } catch (error) {
+      Logger.error('Error al eliminar el producto:', error.message);
+      throw new BadRequestException(error.message || 'Error al eliminar el producto.');
     }
   }
 }

@@ -1207,20 +1207,56 @@
             "description": "Nombre del producto",
             "example": "Laptop"
           },
-          "price": {
+          "purchasePrice": {
             "type": "number",
-            "description": "Precio del producto",
-            "example": 999.99
+            "description": "Precio de compra",
+            "example": 1000
+          },
+          "marginPercent": {
+            "type": "number",
+            "description": "Porcentaje de margen",
+            "example": 20
+          },
+          "isIvaExempt": {
+            "type": "boolean",
+            "description": "Exento de IVA",
+            "example": false
+          },
+          "hasExtraTax": {
+            "type": "boolean",
+            "description": "Tiene impuesto extra",
+            "example": false
+          },
+          "extraTaxRate": {
+            "type": "number",
+            "description": "Tasa de impuesto extra",
+            "example": 15
+          },
+          "supplier": {
+            "type": "string",
+            "description": "ID del proveedor",
+            "example": "63f1b23c9a7d2e1234abcd56"
+          },
+          "stock": {
+            "type": "number",
+            "description": "Cantidad en stock",
+            "example": 50
           },
           "categoryId": {
             "type": "string",
-            "description": "ID de la categoría del producto",
+            "description": "ID de la categoría",
             "example": "63f1b23c9a7d2e1234abcd56"
           }
         },
         "required": [
           "name",
-          "price",
+          "purchasePrice",
+          "marginPercent",
+          "isIvaExempt",
+          "hasExtraTax",
+          "extraTaxRate",
+          "supplier",
+          "stock",
           "categoryId"
         ]
       },
