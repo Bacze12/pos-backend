@@ -2,9 +2,10 @@ import { Injectable, UnauthorizedException, Logger } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { jwtConfig } from '../config/jwt.confg';
+import { UsersService } from '../modules/users/users.service';
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor() {
+  constructor(private readonly usersService: UsersService) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
@@ -20,13 +21,29 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException('Token inválido - Falta tenantId');
     }
 
-    const user = {
-      tenantId: payload.tenantId,
-      email: payload.email,
-      role: payload.role || 'USER', // Distingue entre USER y ADMIN
-    };
+    // Busca al usuario en la base de datos
+    const user = await this.usersService.findById(payload.sub, payload.tenantId);
 
-    this.logger.log('Usuario validado:', user);
-    return user;
+    if (!user) {
+      throw new UnauthorizedException('Usuario no encontrado.');
+    }
+
+    if (!user.isActive) {
+      throw new UnauthorizedException('El usuario está inactivo.');
+    }
+
+    this.logger.log('Usuario validado y activo:', {
+      tenantId: user.tenantId,
+      email: user.email,
+      role: user.role,
+    });
+
+    // Retorna todo lo necesario para `req.user`
+    return {
+      id: user._id,
+      tenantId: user.tenantId,
+      email: user.email,
+      role: user.role || 'USER', // Incluye rol
+    };
   }
 }
