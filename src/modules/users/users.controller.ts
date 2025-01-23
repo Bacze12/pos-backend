@@ -17,7 +17,7 @@ import { UsersService } from './users.service';
 import { RolesGuard } from '../../common/guard/roles.guard';
 import { Roles } from '../../common/decorator/roles.decorator';
 import { CreateUserDto, UpdateUserDto } from './user.dto';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags, ApiBody } from '@nestjs/swagger';
 
 @ApiTags('users') // Grupo de Swagger para este controlador
 @ApiBearerAuth() // Indica que los endpoints requieren autenticación con JWT
@@ -120,5 +120,29 @@ export class UsersController {
       throw new NotFoundException('Usuario no encontrado');
     }
     return result;
+  }
+
+  @Patch(':id/active')
+  @Roles('ADMIN', 'MANAGER')
+  @ApiOperation({
+    summary: 'Activar/Desactivar usuario',
+    description: 'Cambia el estado activo/inactivo de un usuario del tenant actual.',
+  })
+  @ApiResponse({ status: 200, description: 'Estado de usuario actualizado con éxito.' })
+  @ApiResponse({ status: 404, description: 'Usuario no encontrado.' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        isActive: {
+          type: 'boolean',
+          description: 'true para activar, false para desactivar',
+        },
+      },
+    },
+  })
+  async updateUserStatus(@Req() req, @Param('id') id: string, @Body('isActive') isActive: boolean) {
+    const tenantId = this.getTenantIdFromRequest(req);
+    return this.usersService.active(id, tenantId, isActive);
   }
 }
