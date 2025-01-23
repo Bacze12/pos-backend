@@ -9,7 +9,6 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User } from './users.schema';
 import { hashPassword } from '../../middleware/crypto.middleware';
-import { Roles } from '@/common/decorator/roles.decorator';
 
 @Injectable()
 export class UsersService {
@@ -98,7 +97,6 @@ export class UsersService {
     this.logger.log(`Usuario eliminado con éxito.`);
     return { message: 'Usuario eliminado con éxito' };
   }
-  @Roles('ADMIN')
   async active(id: string, tenantId: string, isActive: boolean) {
     // Find user without checking current isActive status
     const user = await this.userModel
