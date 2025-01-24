@@ -69,4 +69,11 @@ export class TenantsService {
       password, // Para desarrollo
     };
   }
+  async findById(id: string): Promise<Tenant | null> {
+    try {
+      return await this.tenantModel.findById(id).exec();
+    } catch (error) {
+      throw new NotFoundException('Tenant no encontrado');
+    }
+  }
 }
