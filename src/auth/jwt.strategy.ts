@@ -23,8 +23,14 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException('Token inválido - Falta tenantId');
     }
 
-    const user = await this.usersService.findById(payload.sub, payload.tenantId);
-    if (!user || !user.isActive) {
+    // Usa email o userId según cómo generaste tu payload en AuthService
+    const user = await this.usersService.findByEmailAndTenant(payload.email, payload.tenantId);
+
+    if (!user) {
+      throw new UnauthorizedException('Usuario no encontrado');
+    }
+
+    if (!user.isActive) {
       throw new UnauthorizedException('Usuario inactivo');
     }
 
@@ -36,7 +42,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     return {
       tenantId: payload.tenantId,
       email: payload.email,
-      name: payload.name,
+      name: payload.username || payload.name,
       role: payload.role || 'USER',
     };
   }
