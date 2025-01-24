@@ -46,6 +46,7 @@ describe('AuthService', () => {
         email: 'test@test.com',
         businessName: 'Test Business',
         password: hashedPassword,
+        isActive: true,
       });
 
       mockJwtService.sign.mockReturnValue('mockToken');
@@ -72,6 +73,7 @@ describe('AuthService', () => {
       mockTenantsService.findByBusinessName.mockResolvedValue({
         _id: 'mockTenantId',
         businessName: 'Test Business',
+        isActive: true,
       });
 
       mockUsersService.findByEmailAndTenant.mockResolvedValue({
@@ -80,6 +82,7 @@ describe('AuthService', () => {
         email: 'test@test.com',
         password: hashedPassword,
         role: 'USER',
+        isActive: true,
       });
 
       const result = await service.login('Test Business', 'test@test.com', 'password123');
