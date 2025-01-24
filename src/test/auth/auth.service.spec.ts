@@ -62,6 +62,7 @@ describe('AuthService', () => {
         businessName: 'Test Business',
         email: 'test@test.com',
         role: 'ADMIN',
+        isActive: true,
       });
       expect(result).toEqual({ access_token: 'mockToken' });
     });
@@ -79,6 +80,7 @@ describe('AuthService', () => {
         _id: 'mockUserId',
         tenantId: 'mockTenantId',
         email: 'test@test.com',
+        username: 'test',
         password: hashedPassword,
         role: 'USER',
         isActive: true,
@@ -99,6 +101,7 @@ describe('AuthService', () => {
         tenantId: 'mockTenantId',
         email: 'test@test.com',
         role: 'USER',
+        isActive: true,
       });
       expect(result).toEqual({ access_token: 'mockToken' });
     });
