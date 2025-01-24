@@ -23,15 +23,31 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException('Token inválido - Falta tenantId');
     }
 
-    // Usa email o userId según cómo generaste tu payload en AuthService
-    const user = await this.usersService.findByEmailAndTenant(payload.email, payload.tenantId);
+    // Verificar si es un usuario o un tenant
+    const isUserPayload = payload.username || payload.name;
 
-    if (!user) {
-      throw new UnauthorizedException('Usuario no encontrado');
-    }
+    let user;
+    if (isUserPayload) {
+      // Lógica para usuarios
+      user = await this.usersService.findByEmailAndTenant(payload.email, payload.tenantId);
 
-    if (!user.isActive) {
-      throw new UnauthorizedException('Usuario inactivo');
+      if (!user) {
+        throw new UnauthorizedException('Usuario no encontrado');
+      }
+
+      if (!user.isActive) {
+        throw new UnauthorizedException('Usuario inactivo');
+      }
+    } else {
+      // Lógica para tenants
+      user = await this.tenantsService.findByBusinessNameAndEmail(
+        payload.businessName,
+        payload.email,
+      );
+
+      if (!user) {
+        throw new UnauthorizedException('Tenant no encontrado');
+      }
     }
 
     const tenant = await this.tenantsService.findById(payload.tenantId);
@@ -42,8 +58,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     return {
       tenantId: payload.tenantId,
       email: payload.email,
-      name: payload.username || payload.name,
-      role: payload.role || 'USER',
+      name: payload.username || payload.businessName,
+      role: payload.role || 'ADMIN',
     };
   }
 }
