@@ -36,6 +36,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       tenantId: user.tenantId,
       email: user.email,
       role: user.role,
+      isActive: user.isActive,
     });
 
     // Retorna todo lo necesario para `req.user`
@@ -44,6 +45,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       tenantId: user.tenantId,
       email: user.email,
       role: user.role || 'USER', // Incluye rol
+      isActive: user.isActive,
     };
   }
 }
