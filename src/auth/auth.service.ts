@@ -18,9 +18,9 @@ export class AuthService {
     const tenant = await this.tenantsService.findByBusinessNameAndEmail(businessName, email);
     if (tenant) {
       // Validar si el tenant está activo
-      // if (!tenant.isActive) {
-      //   throw new UnauthorizedException('El negocio está inactivo. Contacte al administrador.');
-      // }
+      if (!tenant.isActive) {
+        throw new UnauthorizedException('El negocio está inactivo. Contacte al administrador.');
+      }
 
       const isPasswordValid = verifyPassword(password, tenant.password);
       if (!isPasswordValid) {
@@ -29,10 +29,10 @@ export class AuthService {
 
       // Generar token para el tenant
       const payload = {
-        tenantId: tenant._id, // Usar el _id como identificador único
+        tenantId: tenant._id,
         businessName: tenant.businessName,
         email: tenant.email,
-        role: 'ADMIN', // Los tenants son administradores
+        role: 'ADMIN',
       };
 
       return {
@@ -56,9 +56,9 @@ export class AuthService {
     }
 
     // Validar si el usuario está activo
-    // if (!user.isActive) {
-    //   throw new UnauthorizedException('El usuario está inactivo. Contacte al administrador.');
-    // }
+    if (!user.isActive) {
+      throw new UnauthorizedException('El usuario está inactivo. Contacte al administrador.');
+    }
 
     // Paso 4: Verificar la contraseña del usuario
     const isPasswordValid = verifyPassword(password, user.password);
@@ -71,7 +71,7 @@ export class AuthService {
       tenantId: user.tenantId,
       username: user.name,
       email: user.email,
-      role: user.role, // El rol del usuario
+      role: user.role,
     };
 
     return {
