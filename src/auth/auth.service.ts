@@ -33,7 +33,6 @@ export class AuthService {
         businessName: tenant.businessName,
         email: tenant.email,
         role: 'ADMIN', // Los tenants son administradores
-        isActive: tenant.isActive,
       };
 
       return {
@@ -73,7 +72,6 @@ export class AuthService {
       username: user.name,
       email: user.email,
       role: user.role, // El rol del usuario
-      isActive: user.isActive,
     };
 
     return {
