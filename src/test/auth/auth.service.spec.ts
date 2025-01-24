@@ -46,7 +46,6 @@ describe('AuthService', () => {
         email: 'test@test.com',
         businessName: 'Test Business',
         password: hashedPassword,
-        isActive: true,
       });
 
       mockJwtService.sign.mockReturnValue('mockToken');
@@ -62,7 +61,6 @@ describe('AuthService', () => {
         businessName: 'Test Business',
         email: 'test@test.com',
         role: 'ADMIN',
-        isActive: true,
       });
       expect(result).toEqual({ access_token: 'mockToken' });
     });
@@ -80,10 +78,8 @@ describe('AuthService', () => {
         _id: 'mockUserId',
         tenantId: 'mockTenantId',
         email: 'test@test.com',
-        username: 'test',
         password: hashedPassword,
         role: 'USER',
-        isActive: true,
       });
 
       const result = await service.login('Test Business', 'test@test.com', 'password123');
@@ -101,7 +97,6 @@ describe('AuthService', () => {
         tenantId: 'mockTenantId',
         email: 'test@test.com',
         role: 'USER',
-        isActive: true,
       });
       expect(result).toEqual({ access_token: 'mockToken' });
     });
