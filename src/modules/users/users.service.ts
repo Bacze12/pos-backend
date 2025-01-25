@@ -28,12 +28,24 @@ export class UsersService {
     return this.userModel.find({ tenantId }).exec();
   }
 
-  async findById(id: string, tenantId: string) {
-    this.logger.log(`Buscando usuario con id: ${id} y tenantId: ${tenantId}`);
+  async updateUser(id: string, updateData: Partial<User>) {
+    this.logger.log(`Actualizando usuario con id: ${id}`, updateData);
+
+    const user = await this.userModel.findByIdAndUpdate(id, updateData, { new: true }).exec();
+
+    if (!user) {
+      throw new NotFoundException('Usuario no encontrado');
+    }
+
+    return user;
+  }
+
+  // También agrega un método para buscar por ID sin tenant
+  async findById(id: string, tenantId?: string) {
+    this.logger.log(`Buscando usuario con id: ${id}`);
     const user = await this.userModel.findOne({ _id: id, tenantId }).exec();
     if (!user) {
-      this.logger.error(`Usuario con id: ${id} no encontrado para tenantId: ${tenantId}`);
-      throw new NotFoundException('Usuario no encontrado para este tenant.');
+      throw new NotFoundException('Usuario no encontrado');
     }
     return user;
   }

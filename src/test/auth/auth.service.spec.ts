@@ -14,6 +14,7 @@ describe('AuthService', () => {
   };
   const mockUsersService = {
     findByEmailAndTenant: jest.fn(),
+    updateUser: jest.fn(),
   };
   const mockTenantsService = {
     findByBusinessName: jest.fn(),
@@ -83,25 +84,44 @@ describe('AuthService', () => {
         password: hashedPassword,
         role: 'USER',
         isActive: true,
+        activeSession: [],
+        maxActiveSessions: 3,
+        name: 'Test User', // Añadir name si es necesario
       });
+
+      // Mockear tokens con llamadas separadas
+      mockJwtService.sign
+        .mockReturnValueOnce('accessToken') // Primera llamada (access token)
+        .mockReturnValueOnce('refreshToken'); // Segunda llamada (refresh token)
 
       const result = await service.login('Test Business', 'test@test.com', 'password123');
 
-      expect(mockTenantsService.findByBusinessNameAndEmail).toHaveBeenCalledWith(
-        'Test Business',
-        'test@test.com',
+      // Verificar llamadas a sign con los payloads correctos
+      expect(mockJwtService.sign).toHaveBeenNthCalledWith(
+        1,
+        {
+          tenantId: 'mockTenantId',
+          username: 'Test User',
+          email: 'test@test.com',
+          role: 'USER',
+        },
+        { expiresIn: '15m' },
       );
-      expect(mockTenantsService.findByBusinessName).toHaveBeenCalledWith('Test Business');
-      expect(mockUsersService.findByEmailAndTenant).toHaveBeenCalledWith(
-        'test@test.com',
-        'mockTenantId',
+
+      expect(mockJwtService.sign).toHaveBeenNthCalledWith(
+        2,
+        {
+          sub: 'mockUserId',
+          tenantId: 'mockTenantId',
+        },
+        { expiresIn: '7d' },
       );
-      expect(mockJwtService.sign).toHaveBeenCalledWith({
-        tenantId: 'mockTenantId',
-        email: 'test@test.com',
-        role: 'USER',
+
+      // Verificar el resultado
+      expect(result).toEqual({
+        access_token: 'accessToken',
+        refresh_token: 'refreshToken',
       });
-      expect(result).toEqual({ access_token: 'mockToken' });
     });
 
     it('debería lanzar UnauthorizedException para credenciales incorrectas', async () => {

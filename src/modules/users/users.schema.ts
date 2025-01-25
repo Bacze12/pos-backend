@@ -26,6 +26,17 @@ export class User extends Document {
 
   @Prop({ default: [] })
   shifts: string[];
+
+  @Prop({ type: [Object], default: [] })
+  activeSession: {
+    token: string;
+    createdAt: Date;
+    lastUsed: Date;
+    deviceInfo: string;
+  }[];
+
+  @Prop({ default: 3 })
+  maxActiveSessions: number;
 }
 
 const schema = SchemaFactory.createForClass(User);
