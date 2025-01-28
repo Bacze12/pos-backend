@@ -24,7 +24,7 @@ async function bootstrap() {
   });
 
   app.enableCors({
-    origin: ['https://inventory-pos-frontend.vercel.app'],
+    origin: ['https://inventory-pos-frontend.vercel.app', 'http://localhost:3000'],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
     credentials: true,

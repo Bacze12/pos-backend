@@ -1,4 +1,15 @@
-// src/products/utils/price-calculator.ts
+/**
+ * Calculates various prices based on the purchase price and additional factors
+ * @param purchasePrice - The base purchase price of the product
+ * @param marginPercent - The profit margin percentage to be applied
+ * @param isIvaExempt - Indicates if the product is exempt from IVA (VAT) tax
+ * @param hasExtraTax - Indicates if an additional tax should be applied
+ * @param extraTaxRate - Optional percentage rate for additional tax
+ * @returns An object containing:
+ * - sellingPrice: Base selling price with margin (before taxes)
+ * - minSellingPrice: Minimum selling price (10% above purchase price)
+ * - finalPrice: Final price including all applicable taxes
+ */
 export class PriceCalculator {
   static calculatePrices(
     purchasePrice: number,
