@@ -35,8 +35,11 @@ export class TenantsService {
     return this.tenantModel.findOne({ businessName }).exec();
   }
 
-  findAll() {
-    throw new Error('Method not implemented.');
+  // tenants.service.ts
+  async findAll(tenantId: string): Promise<Tenant[]> {
+    this.logger.log(`Buscando todos los tenants asociados al tenant padre: ${tenantId}`);
+    // Busca todos los tenants donde parentTenant coincida con el tenantId proporcionado
+    return this.tenantModel.find({ _id: tenantId }).exec();
   }
 
   async create(tenantData: { businessName: string; email: string }) {
