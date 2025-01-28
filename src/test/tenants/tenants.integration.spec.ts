@@ -4,8 +4,6 @@ import { TenantsService } from '../../modules/tenants/tenants.service';
 
 describe('TenantsController (Integration)', () => {
   let controller: TenantsController;
-  /* eslint-disable @typescript-eslint/no-unused-vars */
-  let service: TenantsService;
 
   const mockService = {
     findAll: jest.fn(),
@@ -24,14 +22,14 @@ describe('TenantsController (Integration)', () => {
     }).compile();
 
     controller = module.get<TenantsController>(TenantsController);
-    service = module.get<TenantsService>(TenantsService);
   });
 
   it('debería devolver todos los tenants', async () => {
     const mockTenants = [{ businessName: 'Tenant1', email: 'tenant1@test.com' }];
     mockService.findAll.mockResolvedValue(mockTenants);
 
-    const result = await controller.getTenants();
+    // Cambio clave: Proveer el tenantId requerido
+    const result = await controller.getTenants('mockTenantId');
 
     expect(result).toEqual(mockTenants);
   });

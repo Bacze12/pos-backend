@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Product } from './products.schema';
 import { Supplier } from '../supplier/supplier.schema';
+import { PriceCalculator } from './utils/price-calculator';
 
 @Injectable()
 export class ProductsService {
@@ -11,35 +12,6 @@ export class ProductsService {
     @InjectModel(Supplier.name) private readonly supplierModel: Model<Supplier>,
   ) {}
 
-  // Lógica para calcular precios
-  private calculatePrices(
-    purchasePrice: number,
-    marginPercent: number,
-    isIvaExempt: boolean,
-    hasExtraTax: boolean,
-    extraTaxRate?: number,
-  ) {
-    const marginMultiplier = 1 + marginPercent / 100;
-    const sellingPrice = purchasePrice * marginMultiplier;
-
-    const minMarginMultiplier = 1.1; // 10% margen mínimo
-    const minSellingPrice = purchasePrice * minMarginMultiplier;
-
-    let finalPrice = sellingPrice;
-    if (!isIvaExempt) {
-      finalPrice *= 1.19; // IVA 19%
-    }
-    if (hasExtraTax && extraTaxRate) {
-      finalPrice *= 1 + extraTaxRate / 100;
-    }
-
-    return {
-      sellingPrice: Number(sellingPrice.toFixed(2)),
-      minSellingPrice: Number(minSellingPrice.toFixed(2)),
-      finalPrice: Number(finalPrice.toFixed(2)),
-    };
-  }
-
   // Crear producto con cálculos
   async create(productData: any) {
     const supplier = await this.supplierModel.findOne({ _id: productData.supplier });
@@ -47,7 +19,7 @@ export class ProductsService {
       throw new Error('Supplier not found');
     }
 
-    const calculatedPrices = this.calculatePrices(
+    const calculatedPrices = PriceCalculator.calculatePrices(
       productData.purchasePrice,
       productData.marginPercent,
       productData.isIvaExempt,
@@ -78,7 +50,7 @@ export class ProductsService {
       throw new Error('Product not found');
     }
 
-    const calculatedPrices = this.calculatePrices(
+    const calculatedPrices = PriceCalculator.calculatePrices(
       updateData.purchasePrice || product.purchasePrice,
       updateData.marginPercent || product.marginPercent,
       updateData.isIvaExempt ?? product.isIvaExempt,

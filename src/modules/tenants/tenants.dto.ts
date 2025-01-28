@@ -16,4 +16,6 @@ export class CreateTenantDto {
   })
   @IsEmail()
   email: string;
+
+  parentTenant?: string;
 }

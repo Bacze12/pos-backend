@@ -13,6 +13,8 @@ describe('TenantsController', () => {
     create: jest.fn(),
   };
 
+  const MOCK_TENANT_ID = 'mockTenantId';
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [TenantsController],
@@ -25,15 +27,11 @@ describe('TenantsController', () => {
     }).compile();
 
     controller = module.get<TenantsController>(TenantsController);
-    service = module.get<TenantsService>(TenantsService);
+    service = mockTenantsService as unknown as TenantsService; // Cast the mock to TenantsService type
   });
 
   afterEach(() => {
     jest.clearAllMocks();
-  });
-
-  it('debería estar definido', () => {
-    expect(controller).toBeDefined();
   });
 
   describe('getTenants', () => {
@@ -50,18 +48,24 @@ describe('TenantsController', () => {
           .setPassword('password2')
           .build(),
       ];
+
+      // Usar el mockTenantsService directamente para las expectativas
       mockTenantsService.findAll.mockResolvedValue(mockTenants);
 
-      const result = await controller.getTenants();
+      const result = await controller.getTenants(MOCK_TENANT_ID);
 
-      expect(service.findAll).toHaveBeenCalledTimes(1);
+      expect(mockTenantsService.findAll).toHaveBeenCalledWith(MOCK_TENANT_ID); // Usar mockTenantsService en lugar de service
+      expect(mockTenantsService.findAll).toHaveBeenCalledTimes(1);
       expect(result).toEqual(mockTenants);
     });
 
     it('debería lanzar un error si el servicio falla', async () => {
       mockTenantsService.findAll.mockRejectedValue(new Error('Error interno del servidor'));
 
-      await expect(controller.getTenants()).rejects.toThrow('Error interno del servidor');
+      // Cambio aquí: agregar tenantId como parámetro
+      await expect(controller.getTenants(MOCK_TENANT_ID)).rejects.toThrow(
+        'Error interno del servidor',
+      );
     });
   });
 
@@ -73,7 +77,7 @@ describe('TenantsController', () => {
 
     it('debería crear un tenant exitosamente', async () => {
       const mockResponse = {
-        message: 'Tenant creado exitosamente',
+        message: 'Tenant padre creado exitosamente', // Usar el mensaje correcto
         tenant: validTenantData,
         password: 'securePassword',
       };

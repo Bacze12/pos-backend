@@ -4,8 +4,6 @@ import {
   Post,
   Body,
   UseGuards,
-  UnauthorizedException,
-  Req,
   BadRequestException,
   Logger,
   Param,
@@ -15,6 +13,7 @@ import { ProductsService } from './products.service';
 import { AuthGuard } from '@nestjs/passport';
 import { CreateProductDto } from './products.dto';
 import { ApiBearerAuth, ApiTags, ApiResponse, ApiOperation } from '@nestjs/swagger';
+import { TenantId } from '../../common/decorator/tenant-id.decorator';
 
 @ApiTags('products')
 @ApiBearerAuth()
@@ -23,50 +22,30 @@ import { ApiBearerAuth, ApiTags, ApiResponse, ApiOperation } from '@nestjs/swagg
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
-  private getTenantIdFromRequest(req): string {
-    const tenantId = req.user?.tenantId;
-    if (!tenantId) {
-      throw new UnauthorizedException('Falta tenantId en el contexto del usuario.');
-    }
-    return tenantId;
-  }
-
-  @Get('')
+  @Get()
   @ApiOperation({
     summary: 'Obtener todos los productos',
     description: 'Devuelve una lista de productos para el tenant actual.',
   })
   @ApiResponse({ status: 200, description: 'Productos recuperados con éxito.' })
-  @ApiResponse({
-    status: 401,
-    description: 'No autorizado. Falta el tenantId o el token JWT es inválido.',
-  })
-  async getProducts(@Req() req) {
-    const tenantId = this.getTenantIdFromRequest(req);
+  async getProducts(@TenantId() tenantId: string) {
     return this.productsService.findAll(tenantId);
   }
 
-  @Post('')
+  @Post()
   @ApiOperation({
     summary: 'Crear un nuevo producto',
     description: 'Crea un producto asociado al tenant actual.',
   })
   @ApiResponse({ status: 201, description: 'Producto creado con éxito.' })
   @ApiResponse({ status: 400, description: 'Datos de entrada inválidos.' })
-  @ApiResponse({
-    status: 401,
-    description: 'No autorizado. Falta el tenantId o el token JWT es inválido.',
-  })
-  async createProduct(@Req() req, @Body() productData: CreateProductDto) {
-    const tenantId = this.getTenantIdFromRequest(req);
-
+  async createProduct(@TenantId() tenantId: string, @Body() productData: CreateProductDto) {
     try {
       const createdProduct = await this.productsService.create({
         ...productData,
         tenantId,
       });
 
-      // Responder con el producto creado y un código HTTP 201
       return {
         statusCode: 201,
         message: 'Producto creado con éxito.',
@@ -85,9 +64,7 @@ export class ProductsController {
   })
   @ApiResponse({ status: 200, description: 'Producto eliminado con éxito.' })
   @ApiResponse({ status: 400, description: 'Error al eliminar el producto.' })
-  async remove(@Req() req, @Param('id') id: string) {
-    const tenantId = this.getTenantIdFromRequest(req);
-
+  async remove(@TenantId() tenantId: string, @Param('id') id: string) {
     try {
       await this.productsService.deleteProduct(tenantId, id);
       return {
