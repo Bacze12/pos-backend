@@ -35,7 +35,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       }
 
       return {
-        tenantId: tenant._id.toString(), // Aseguramos que tenantId es string
+        tenantId: tenant._id,
         email: payload.email,
         businessName: payload.businessName,
         role: 'ADMIN',
@@ -49,7 +49,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     }
 
     return {
-      tenantId: tenantId.toString(),
+      tenantId: payload.tenantId,
       email: payload.email,
       username: payload.username,
       role: payload.role,

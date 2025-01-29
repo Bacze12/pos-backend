@@ -1,7 +1,7 @@
 @password = 22c686ea535d7e238e37f7f97c4e83ba
 @password2 = ff6173272bd3567f78e5e50e61349432
 
-@password3 = ee981b4c0290790d972477d984fa3388
+@password3 = asd123
 
 ### Login 
 POST http://localhost:5000/auth/login

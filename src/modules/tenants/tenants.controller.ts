@@ -1,8 +1,9 @@
-import { Controller, Post, Body, Get, Logger, Patch } from '@nestjs/common';
+import { Controller, Post, Body, Get, Logger, Patch, UseGuards } from '@nestjs/common';
 import { TenantsService } from './tenants.service';
 import { CreateTenantDto, UpdateTenantPasswordDto } from './tenants.dto';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { TenantId } from '../../common/decorator/tenant-id.decorator';
+import { AuthGuard } from '@nestjs/passport';
 
 @ApiTags('tenants')
 @Controller('tenants')
@@ -47,6 +48,7 @@ export class TenantsController {
     }
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Patch('password')
   // @Roles('OWNER') // Solo el OWNER puede cambiar su contraseña
   @ApiOperation({

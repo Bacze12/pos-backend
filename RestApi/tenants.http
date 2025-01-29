@@ -12,8 +12,7 @@ Content-Type: application/json
     "password": "ee981b4c0290790d972477d984fa3388"
 }
 
-# @name loginResponse
-@jwtToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZW5hbnRJZCI6IjY3OTFjYzlhYmY5MTA1ODZhZGRkYmQ3ZCIsImJ1c2luZXNzTmFtZSI6ImJydW5vIiwiZW1haWwiOiJicnVub0BnbWFpbC5jb20iLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3MzgxNzM1MTQsImV4cCI6MTczODE3NDQxNH0.un4gX-nJVI2y_YSpFRmmjfXtLFMvqsGXP2WhMKn_oBM
+@jwtToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZW5hbnRJZCI6IjY3OTFjYzlhYmY5MTA1ODZhZGRkYmQ3ZCIsImJ1c2luZXNzTmFtZSI6ImJydW5vIiwiZW1haWwiOiJicnVub0BnbWFpbC5jb20iLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3MzgxOTE5NTgsImV4cCI6MTczODE5Mjg1OH0.OA7MeDAKGkfD-BPPGKselgItVyjQbx9ishM3XQikiZU
 
 ### 2. Actualizar contraseña tenant
 PATCH {{tenantsUrl}}/password
