@@ -24,11 +24,11 @@ async function bootstrap() {
   });
 
   app.enableCors({
-    // origin: ['https://inventory-pos-frontend.vercel.app'],
+    // origin: ['https://inventory-pos-frontend.vercel.app', 'http://localhost:3000'],
     origin: '*', // Permitir todas las solicitudes
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
-    credentials: false,
+    // credentials: true,
   });
   // Configurar Swagger
   const config = new DocumentBuilder()
