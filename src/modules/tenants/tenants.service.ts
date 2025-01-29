@@ -79,4 +79,23 @@ export class TenantsService {
       throw new NotFoundException('Tenant no encontrado');
     }
   }
+
+  async updatePassword(tenantId: string, newPassword: string) {
+    this.logger.log(`Actualizando contraseña para el tenant con ID: ${tenantId}`);
+
+    const tenant = await this.tenantModel.findById(tenantId).exec();
+    if (!tenant) {
+      throw new NotFoundException('Tenant no encontrado');
+    }
+
+    // Hashear la nueva contraseña antes de guardarla
+    tenant.password = hashPassword(newPassword);
+    await tenant.save();
+
+    return { message: 'Contraseña actualizada con éxito' };
+  }
+
+  async updateTenant(tenantId: string, updateData: Partial<Tenant>) {
+    return this.tenantModel.findByIdAndUpdate(tenantId, updateData, { new: true }).exec();
+  }
 }

@@ -16,6 +16,11 @@ export class CreateTenantDto {
   })
   @IsEmail()
   email: string;
+}
 
-  parentTenant?: string;
+export class UpdateTenantPasswordDto {
+  @ApiProperty({ description: 'Nueva contraseña', example: 'NuevaClaveSegura123!' })
+  @IsString()
+  @IsNotEmpty()
+  newPassword: string;
 }

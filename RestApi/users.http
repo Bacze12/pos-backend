@@ -1,5 +1,5 @@
 @url = http://localhost:5000/users
-@jwtToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZW5hbnRJZCI6IjY3OGFhNGNhNTQzNDAyOGY2NTViYWVjOCIsImJ1c2luZXNzTmFtZSI6IkpvaG4gRG9lIiwiZW1haWwiOiJqb2huQGdtYWlsLmNvbSIsInJvbGUiOiJBRE1JTiIsImlhdCI6MTczNzEzOTQ0NiwiZXhwIjoxNzM3MjI1ODQ2fQ.ENVF00OWd2G4IoFP8OXJzUmumQxRswF_fGBmorkfviM
+@jwtToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZW5hbnRJZCI6IjY3OGFhNGNhNTQzNDAyOGY2NTViYWVjOCIsInVzZXJuYW1lIjoiSm9obiBEb2UiLCJlbWFpbCI6InRlc3QxQGdtYWlsLmNvbSIsInJvbGUiOiJBRE1JTiIsImlhdCI6MTczODE1MzQ3OCwiZXhwIjoxNzM4MTU0Mzc4fQ.bp-E-miRPtbhLL6aR8gC-NRo_7r1y7NhEeU6UcbWRj0
 
 ### Login User
 POST http://localhost:5000/auth/login
@@ -9,7 +9,7 @@ Authorization: Bearer {{jwtToken}}
 {
     "email":"test1@gmail.com",
     "businessName":"John Doe",
-    "password":"password"
+    "password":"asd123"
 }
 
 ### Create User
@@ -30,17 +30,17 @@ Content-Type: application/json
 Authorization: Bearer {{jwtToken}}
 
 ### Get User by ID
-GET {{url}}/6786d9b06e0e6e70d5f90b0b
+GET {{url}}/678aa50d5434028f655baecc
 Content-Type: application/json
 Authorization:  Bearer {{jwtToken}}
 
 ### Update User
-PATCH {{url}}/6786d9b06e0e6e70d5f90b0b
+PATCH {{url}}/678aa50d5434028f655baecc
 Content-Type: application/json
 Authorization: Bearer {{jwtToken}}
 
 {
-    "email": "John2@gmail.com"
+    "password": "asd123"
     }
 
 ### Delete User

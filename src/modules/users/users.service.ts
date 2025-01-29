@@ -87,13 +87,21 @@ export class UsersService {
       updateData,
     );
 
+    // Verificar si la contraseña está presente y hashearla antes de actualizar
+    if (updateData.password) {
+      this.logger.log('Hashing new password before updating user');
+      updateData.password = hashPassword(updateData.password);
+    }
+
     const user = await this.userModel
       .findOneAndUpdate({ _id: id, tenantId }, updateData, { new: true })
       .exec();
+
     if (!user) {
       this.logger.error(`Usuario con id: ${id} no encontrado para tenantId: ${tenantId}`);
       throw new NotFoundException('Usuario no encontrado para este tenant.');
     }
+
     this.logger.log(`Usuario actualizado con éxito:`, user);
     return user;
   }

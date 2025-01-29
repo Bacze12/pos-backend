@@ -1,10 +1,34 @@
-@url = http://localhost:5000/tenants
+@baseUrl = http://localhost:5000
+@authUrl = {{baseUrl}}/auth
+@tenantsUrl = {{baseUrl}}/tenants
 @password = ee981b4c0290790d972477d984fa3388
-### Crear tenant
-POST {{url}}
+
+### 1. Login primero
+POST http://localhost:5000/auth/login
+Content-Type: application/json
+{
+    "businessName": "bruno",
+    "email": "bruno@gmail.com",
+    "password": "ee981b4c0290790d972477d984fa3388"
+}
+
+# @name loginResponse
+@jwtToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZW5hbnRJZCI6IjY3OTFjYzlhYmY5MTA1ODZhZGRkYmQ3ZCIsImJ1c2luZXNzTmFtZSI6ImJydW5vIiwiZW1haWwiOiJicnVub0BnbWFpbC5jb20iLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3MzgxNzM1MTQsImV4cCI6MTczODE3NDQxNH0.un4gX-nJVI2y_YSpFRmmjfXtLFMvqsGXP2WhMKn_oBM
+
+### 2. Actualizar contraseña tenant
+PATCH {{tenantsUrl}}/password
+Content-Type: application/json
+Authorization: Bearer {{jwtToken}}
+
+{
+    "newPassword": "asd123"
+}
+
+### 3. Crear tenant (opcional)
+POST {{tenantsUrl}}
 Content-Type: application/json
 
 { 
     "businessName": "bruno",
-    "email":"bruno@gmail.com"
+    "email": "bruno@gmail.com"
 }
