@@ -15,11 +15,23 @@ export class UsersService {
   constructor(@InjectModel(User.name) private userModel: Model<User>) {}
   private readonly logger = new Logger(UsersService.name);
 
+  /**
+   * Finds a user by email and tenant ID.
+   * @param email - The email of the user.
+   * @param tenantId - The tenant ID associated with the user.
+   * @returns The user if found, otherwise null.
+   */
   async findByEmailAndTenant(email: string, tenantId: string): Promise<User | null> {
     this.logger.log(`Buscando usuario con email: ${email} y tenantId: ${tenantId}`);
     return this.userModel.findOne({ email, tenantId }).exec();
   }
 
+  /**
+   * Finds all users associated with a tenant.
+   * @param tenantId - The tenant ID.
+   * @returns A list of users.
+   * @throws NotFoundException if tenantId is not provided.
+   */
   async findAllByTenant(tenantId: string) {
     if (!tenantId) {
       throw new NotFoundException('El tenantId es obligatorio.');
@@ -28,6 +40,13 @@ export class UsersService {
     return this.userModel.find({ tenantId }).exec();
   }
 
+  /**
+   * Updates a user by ID.
+   * @param id - The ID of the user.
+   * @param updateData - The data to update the user with.
+   * @returns The updated user.
+   * @throws NotFoundException if the user is not found.
+   */
   async updateUser(id: string, updateData: Partial<User>) {
     this.logger.log(`Actualizando usuario con id: ${id}`, updateData);
 
@@ -40,7 +59,13 @@ export class UsersService {
     return user;
   }
 
-  // También agrega un método para buscar por ID sin tenant
+  /**
+   * Finds a user by ID and tenant ID.
+   * @param id - The ID of the user.
+   * @param tenantId - The tenant ID associated with the user.
+   * @returns The user if found.
+   * @throws NotFoundException if the user is not found.
+   */
   async findById(id: string, tenantId?: string) {
     this.logger.log(`Buscando usuario con id: ${id}`);
     const user = await this.userModel.findOne({ _id: id, tenantId }).exec();
@@ -50,6 +75,13 @@ export class UsersService {
     return user;
   }
 
+  /**
+   * Creates a new user.
+   * @param userData - The data for the new user.
+   * @returns The created user.
+   * @throws BadRequestException if tenantId is not provided.
+   * @throws ConflictException if the email is already in use for the tenant.
+   */
   async create(userData: any) {
     if (!userData.tenantId) {
       throw new BadRequestException('El tenantId es requerido');
@@ -81,6 +113,14 @@ export class UsersService {
     }
   }
 
+  /**
+   * Updates a user by ID and tenant ID.
+   * @param id - The ID of the user.
+   * @param updateData - The data to update the user with.
+   * @param tenantId - The tenant ID associated with the user.
+   * @returns The updated user.
+   * @throws NotFoundException if the user is not found.
+   */
   async update(id: string, updateData: any, tenantId: string) {
     this.logger.log(
       `Intentando actualizar usuario con id: ${id} para tenantId: ${tenantId}`,
@@ -98,6 +138,13 @@ export class UsersService {
     return user;
   }
 
+  /**
+   * Deletes a user by ID and tenant ID.
+   * @param id - The ID of the user.
+   * @param tenantId - The tenant ID associated with the user.
+   * @returns A message indicating successful deletion.
+   * @throws NotFoundException if the user is not found.
+   */
   async delete(id: string, tenantId: string) {
     this.logger.log(`Intentando eliminar usuario con id: ${id} para tenantId: ${tenantId}`);
 
@@ -109,6 +156,15 @@ export class UsersService {
     this.logger.log(`Usuario eliminado con éxito.`);
     return { message: 'Usuario eliminado con éxito' };
   }
+
+  /**
+   * Activates or deactivates a user by ID and tenant ID.
+   * @param id - The ID of the user.
+   * @param tenantId - The tenant ID associated with the user.
+   * @param isActive - The active status to set.
+   * @returns The updated user.
+   * @throws NotFoundException if the user is not found.
+   */
   async active(id: string, tenantId: string, isActive: boolean) {
     // Find user without checking current isActive status
     const user = await this.userModel

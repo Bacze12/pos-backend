@@ -14,8 +14,35 @@ export class AuthService {
     private readonly usersService: UsersService,
   ) {}
 
+  /**
+   * Handles the login process for both tenants and users.
+   * @param businessName - The business name associated with the tenant or user.
+   * @param email - The email of the tenant or user.
+   * @param password - The password of the tenant or user.
+   * @returns An object containing the access token and refresh token.
+   */
   async login(businessName: string, email: string, password: string) {
-    // Proceso de autenticación de tenant (sin cambios)
+    const tenant = await this.authenticateTenant(businessName, email, password);
+    if (tenant) {
+      return tenant;
+    }
+
+    const user = await this.authenticateUser(businessName, email, password);
+    if (user) {
+      return user;
+    }
+
+    throw new UnauthorizedException('Credenciales inválidas');
+  }
+
+  /**
+   * Authenticates a tenant based on business name, email, and password.
+   * @param businessName - The business name associated with the tenant.
+   * @param email - The email of the tenant.
+   * @param password - The password of the tenant.
+   * @returns An object containing the access token if authentication is successful.
+   */
+  private async authenticateTenant(businessName: string, email: string, password: string) {
     const tenant = await this.tenantsService.findByBusinessNameAndEmail(businessName, email);
     if (tenant) {
       if (!tenant.isActive) {
@@ -38,8 +65,17 @@ export class AuthService {
         access_token: this.jwtService.sign(payload),
       };
     }
+    return null;
+  }
 
-    // Proceso de autenticación de usuario
+  /**
+   * Authenticates a user based on business name, email, and password.
+   * @param businessName - The business name associated with the user.
+   * @param email - The email of the user.
+   * @param password - The password of the user.
+   * @returns An object containing the access token and refresh token if authentication is successful.
+   */
+  private async authenticateUser(businessName: string, email: string, password: string) {
     const tenantFromBusiness = await this.tenantsService.findByBusinessName(businessName);
     if (!tenantFromBusiness) {
       throw new UnauthorizedException('El negocio no existe');
@@ -62,11 +98,9 @@ export class AuthService {
       throw new UnauthorizedException('Credenciales inválidas');
     }
 
-    // Generar tokens con gestión de sesiones
     const accessToken = this.generateAccessToken(user);
     const refreshToken = this.generateRefreshToken(user);
 
-    // Gestionar sesiones activas
     await this.manageActiveSessions(user, refreshToken);
 
     return {
@@ -75,6 +109,11 @@ export class AuthService {
     };
   }
 
+  /**
+   * Generates an access token for a user.
+   * @param user - The user for whom the access token is generated.
+   * @returns The generated access token.
+   */
   private generateAccessToken(user: User) {
     const payload = {
       tenantId: user.tenantId,
@@ -85,6 +124,11 @@ export class AuthService {
     return this.jwtService.sign(payload, { expiresIn: '15m' });
   }
 
+  /**
+   * Generates a refresh token for a user.
+   * @param user - The user for whom the refresh token is generated.
+   * @returns The generated refresh token.
+   */
   private generateRefreshToken(user: User) {
     const payload = {
       sub: user._id,
@@ -93,21 +137,23 @@ export class AuthService {
     return this.jwtService.sign(payload, { expiresIn: '7d' });
   }
 
+  /**
+   * Manages the active sessions for a user, ensuring the session limit is not exceeded.
+   * @param user - The user whose sessions are being managed.
+   * @param newRefreshToken - The new refresh token to be added to the active sessions.
+   */
   private async manageActiveSessions(user: User, newRefreshToken: string) {
-    // Límite de sesiones (por defecto 3)
     const MAX_SESSIONS = user.maxActiveSessions || 3;
 
-    // Si se alcanza el límite, eliminar la sesión más antigua
     if (user.activeSession.length >= MAX_SESSIONS) {
       user.activeSession.shift();
     }
 
-    // Agregar nueva sesión
     user.activeSession.push({
       token: newRefreshToken,
       createdAt: new Date(),
       lastUsed: new Date(),
-      deviceInfo: this.getDeviceInfo(), // Implementa método para obtener info del dispositivo
+      deviceInfo: this.getDeviceInfo(),
     });
 
     await this.usersService.updateUser(user.id, {
@@ -115,33 +161,35 @@ export class AuthService {
     });
   }
 
+  /**
+   * Retrieves device information for session management.
+   * @returns A placeholder string for device information.
+   */
   private getDeviceInfo() {
-    // Implementa lógica para obtener información del dispositivo
-    // Puedes usar headers, user-agent, etc.
     return 'Device Info Placeholder';
   }
 
+  /**
+   * Refreshes the access token using a valid refresh token.
+   * @param refreshToken - The refresh token used to generate a new access token.
+   * @returns An object containing the new access token.
+   */
   async refreshAccessToken(refreshToken: string) {
     try {
-      // Verificar y decodificar el refresh token
       const decoded = this.jwtService.verify(refreshToken);
 
-      // Buscar usuario
       const user = await this.usersService.findById(decoded.sub);
 
-      // Verificar si el usuario está activo
       if (!user || !user.isActive) {
         throw new UnauthorizedException('Usuario inválido o inactivo');
       }
 
-      // Verificar si el refresh token existe en sesiones activas
       const validSession = user.activeSession.some((session) => session.token === refreshToken);
 
       if (!validSession) {
         throw new UnauthorizedException('Sesión inválida');
       }
 
-      // Generar nuevo access token
       return {
         access_token: this.generateAccessToken(user),
       };
@@ -150,16 +198,17 @@ export class AuthService {
     }
   }
 
+  /**
+   * Logs out a user by removing the refresh token from active sessions.
+   * @param refreshToken - The refresh token to be removed from active sessions.
+   */
   async logout(refreshToken: string) {
     try {
-      // Decodificar token
       const decoded = this.jwtService.verify(refreshToken);
 
-      // Buscar usuario
       const user = await this.usersService.findById(decoded.sub);
 
       if (user) {
-        // Eliminar este refresh token de las sesiones activas
         user.activeSession = user.activeSession.filter((session) => session.token !== refreshToken);
 
         await this.usersService.updateUser(user.id, {
@@ -167,7 +216,6 @@ export class AuthService {
         });
       }
     } catch (error) {
-      // Manejar errores de token
       throw new UnauthorizedException('Error al cerrar sesión');
     }
   }
