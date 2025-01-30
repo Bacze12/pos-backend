@@ -13,10 +13,21 @@ export class SalesService {
     @InjectModel(Shift.name) private shiftModel: Model<Shift>,
   ) {}
 
+  /**
+   * Retrieves all sales for a given tenant.
+   * @param tenantId - The ID of the tenant.
+   * @returns A list of sales.
+   */
   async findAll(tenantId: string): Promise<Sale[]> {
     return this.saleModel.find({ tenantId }).exec();
   }
 
+  /**
+   * Creates a new sale with associated sale items and updates the shift.
+   * @param tenantId - The ID of the tenant.
+   * @param saleData - The data for the new sale.
+   * @returns The created sale.
+   */
   async create(tenantId: string, saleData: any): Promise<Sale> {
     const session = await this.saleModel.db.startSession();
     session.startTransaction();
@@ -25,15 +36,7 @@ export class SalesService {
       const { shift, items, ...saleDetails } = saleData;
 
       // Verificar que el shift está abierto
-      const currentShift = await this.shiftModel.findOne({
-        _id: shift,
-        tenantId,
-        status: 'OPEN',
-      });
-
-      if (!currentShift) {
-        throw new Error('El turno no está abierto o no existe');
-      }
+      const currentShift = await this.validateShift(tenantId, shift);
 
       // Crear la venta con la fecha actual
       const sale = new this.saleModel({
@@ -76,6 +79,34 @@ export class SalesService {
     }
   }
 
+  /**
+   * Validates the shift by its ID and tenant ID.
+   * @param tenantId - The ID of the tenant.
+   * @param shiftId - The ID of the shift.
+   * @returns The validated shift.
+   * @throws Error if the shift is not found or not open.
+   */
+  private async validateShift(tenantId: string, shiftId: string) {
+    const shift = await this.shiftModel.findOne({
+      _id: shiftId,
+      tenantId,
+      status: 'OPEN',
+    });
+
+    if (!shift) {
+      throw new Error('El turno no está abierto o no existe');
+    }
+
+    return shift;
+  }
+
+  /**
+   * Updates an existing sale with associated sale items.
+   * @param tenantId - The ID of the tenant.
+   * @param saleId - The ID of the sale to update.
+   * @param updateData - The data to update the sale with.
+   * @returns The updated sale.
+   */
   async update(tenantId: string, saleId: string, updateData: any): Promise<Sale> {
     const session = await this.saleModel.db.startSession();
     session.startTransaction();
@@ -113,6 +144,12 @@ export class SalesService {
     }
   }
 
+  /**
+   * Deletes a sale and its associated sale items.
+   * @param tenantId - The ID of the tenant.
+   * @param saleId - The ID of the sale to delete.
+   * @returns The result of the deletion.
+   */
   async delete(tenantId: string, saleId: string): Promise<any> {
     const session = await this.saleModel.db.startSession();
     session.startTransaction();
@@ -135,6 +172,12 @@ export class SalesService {
     }
   }
 
+  /**
+   * Retrieves sales by shift ID for a given tenant.
+   * @param tenantId - The ID of the tenant.
+   * @param shiftId - The ID of the shift.
+   * @returns A list of sales.
+   */
   async findByShift(tenantId: string, shiftId: string): Promise<Sale[]> {
     return this.saleModel.find({ tenantId, shift: shiftId }).exec();
   }
