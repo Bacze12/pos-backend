@@ -126,27 +126,36 @@ export class AuthService {
   private generateRefreshToken(entity: User | Tenant) {
     const payload = {
       sub: entity._id.toString(),
-      tenantId: 'businessName' in entity ? entity._id.toString() : (entity as User).tenantId.toString(),
+      tenantId:
+        'businessName' in entity ? entity._id.toString() : (entity as User).tenantId.toString(),
       type: 'businessName' in entity ? 'tenant' : 'user',
     };
     return this.jwtService.sign(payload, { expiresIn: '7d' });
   }
 
-  private async manageActiveSessions(entity: User | Tenant, newRefreshToken: string) {
+  private async manageActiveSessions(entity: User | Tenant, tokenString: string) {
     try {
       if (!entity.activeSession) {
         entity.activeSession = [];
       }
 
       const MAX_SESSIONS = entity.maxActiveSessions || 3;
-      this.logger.debug(`Sesiones activas: ${entity.activeSession.length}, Máximo permitido: ${MAX_SESSIONS}`);
+      this.logger.debug(
+        `Sesiones activas: ${entity.activeSession.length}, Máximo permitido: ${MAX_SESSIONS}`,
+      );
 
       if (entity.activeSession.length >= MAX_SESSIONS) {
-        entity.activeSession.shift(); // Elimina la sesión más antigua
+        entity.activeSession.shift();
       }
 
+      const newRefreshToken = {
+        token: tokenString,
+        createdAt: new Date(),
+        lastUsed: new Date(),
+        deviceInfo: 'web', // Default device info
+      };
+
       entity.activeSession.push(newRefreshToken);
-      // Aquí se debería guardar el cambio en la base de datos, por ejemplo:
       // await this.tenantsService.update(entity._id, { activeSession: entity.activeSession });
     } catch (error) {
       this.logger.error('Error gestionando sesiones activas', error);

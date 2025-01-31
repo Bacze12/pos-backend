@@ -53,6 +53,7 @@ describe('AuthService', () => {
 
       mockJwtService.sign.mockReturnValue('mockToken');
 
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const result = await service.login('Test Business', 'test@test.com', 'password123');
 
       expect(mockTenantsService.findByBusinessNameAndEmail).toHaveBeenCalledWith(
