@@ -36,7 +36,6 @@ export class SalesService {
       const { shift, items, ...saleDetails } = saleData;
 
       // Verificar que el shift está abierto
-      const currentShift = await this.validateShift(tenantId, shift);
 
       // Crear la venta con la fecha actual
       const sale = new this.saleModel({
