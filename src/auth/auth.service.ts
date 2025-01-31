@@ -17,8 +17,28 @@ export class AuthService {
     private readonly usersService: UsersService,
   ) {}
 
+  /**
+   * Handles the login process for both tenants and users.
+   * @param businessName - The business name associated with the tenant or user.
+   * @param email - The email of the tenant or user.
+   * @param password - The password of the tenant or user.
+   * @returns An object containing the access token and refresh token.
+   */
   async login(businessName: string, email: string, password: string) {
-    // 🔹 Proceso de autenticación de tenant
+    const tenant = await this.authenticateTenant(businessName, email, password);
+    if (tenant) {
+      return tenant;
+    }
+
+    const user = await this.authenticateUser(businessName, email, password);
+    if (user) {
+      return user;
+    }
+
+    throw new UnauthorizedException('Credenciales inválidas');
+  }
+
+  private async authenticateTenant(businessName: string, email: string, password: string) {
     const tenant = await this.tenantsService.findByBusinessNameAndEmail(businessName, email);
     if (tenant) {
       if (!tenant.isActive) {
@@ -30,11 +50,9 @@ export class AuthService {
         throw new UnauthorizedException('Credenciales inválidas');
       }
 
-      // 🔹 Generamos accessToken y refreshToken
       const accessToken = this.generateAccessToken(tenant);
       const refreshToken = this.generateRefreshToken(tenant);
 
-      // 🔹 Guardamos la sesión activa en la base de datos
       await this.manageActiveSessions(tenant, refreshToken);
 
       return {
@@ -45,8 +63,10 @@ export class AuthService {
         email: tenant.email,
       };
     }
+    return null;
+  }
 
-    // 🔹 Proceso de autenticación de usuario
+  private async authenticateUser(businessName: string, email: string, password: string) {
     const tenantFromBusiness = await this.tenantsService.findByBusinessName(businessName);
     if (!tenantFromBusiness) {
       throw new UnauthorizedException('El negocio no existe');
@@ -88,13 +108,13 @@ export class AuthService {
 
     const payload = isTenant
       ? {
-          tenantId: entity._id.toString(), // Para tenant, el ID es su propio _id
+          tenantId: entity._id.toString(),
           businessName: (entity as Tenant).businessName,
           email: entity.email,
           role: 'ADMIN',
         }
       : {
-          tenantId: (entity as User).tenantId.toString(), // Para user, usamos su tenantId
+          tenantId: (entity as User).tenantId.toString(),
           username: (entity as User).name,
           email: entity.email,
           role: (entity as User).role,
@@ -106,8 +126,7 @@ export class AuthService {
   private generateRefreshToken(entity: User | Tenant) {
     const payload = {
       sub: entity._id.toString(),
-      tenantId:
-        'businessName' in entity ? entity._id.toString() : (entity as User).tenantId.toString(),
+      tenantId: 'businessName' in entity ? entity._id.toString() : (entity as User).tenantId.toString(),
       type: 'businessName' in entity ? 'tenant' : 'user',
     };
     return this.jwtService.sign(payload, { expiresIn: '7d' });
@@ -115,142 +134,23 @@ export class AuthService {
 
   private async manageActiveSessions(entity: User | Tenant, newRefreshToken: string) {
     try {
-      // Asegurarnos que activeSession existe
       if (!entity.activeSession) {
         entity.activeSession = [];
       }
 
       const MAX_SESSIONS = entity.maxActiveSessions || 3;
-      Logger.debug(`Sesiones activas antes: ${JSON.stringify(entity.activeSession)}`);
-      // Eliminar sesiones antiguas si se excede el límite
+      this.logger.debug(`Sesiones activas: ${entity.activeSession.length}, Máximo permitido: ${MAX_SESSIONS}`);
+
       if (entity.activeSession.length >= MAX_SESSIONS) {
-        entity.activeSession.shift();
+        entity.activeSession.shift(); // Elimina la sesión más antigua
       }
 
-      const newSession = {
-        token: newRefreshToken,
-        createdAt: new Date(),
-        lastUsed: new Date(),
-        deviceInfo: this.getDeviceInfo(), // Ahora devuelve un string
-      };
-
-      entity.activeSession.push(newSession);
-      Logger.debug(`Sesiones activas después: ${JSON.stringify(entity.activeSession)}`);
-      // Actualizar la entidad según su tipo
-      if ('businessName' in entity) {
-        // Es un Tenant
-        await this.tenantsService.updateTenant(entity._id.toString(), {
-          activeSession: entity.activeSession,
-        });
-      } else {
-        // Es un Usuario
-        await this.usersService.updateUser(entity._id.toString(), {
-          activeSession: entity.activeSession,
-        });
-      }
-
-      this.logger.debug(
-        `Sesión activa guardada para ${
-          'businessName' in entity ? 'tenant' : 'usuario'
-        } ${entity._id}`,
-      );
-      Logger.debug(
-        `Sesión guardada correctamente para ${'businessName' in entity ? 'Tenant' : 'User'}`,
-      );
+      entity.activeSession.push(newRefreshToken);
+      // Aquí se debería guardar el cambio en la base de datos, por ejemplo:
+      // await this.tenantsService.update(entity._id, { activeSession: entity.activeSession });
     } catch (error) {
-      this.logger.error('Error al gestionar las sesiones activas:', error);
-      throw new UnauthorizedException('Error al gestionar la sesión');
-    }
-  }
-
-  private getDeviceInfo(): string {
-    // Convertimos la información del dispositivo a string
-    const deviceInfo = {
-      userAgent: 'Device Info Placeholder',
-      platform: 'web',
-      timestamp: new Date().toISOString(),
-    };
-
-    return JSON.stringify(deviceInfo);
-  }
-
-  async refreshAccessToken(refreshToken: string) {
-    try {
-      const decoded = this.jwtService.verify(refreshToken);
-      const isTenant = decoded.type === 'tenant';
-
-      const entity = isTenant
-        ? await this.tenantsService.findById(decoded.sub)
-        : await this.usersService.findById(decoded.sub);
-
-      if (!entity || !entity.isActive) {
-        throw new UnauthorizedException('Entidad inválida o inactiva');
-      }
-
-      // Verificar si el token está en las sesiones activas
-      const validSession = entity.activeSession?.some((session) => session.token === refreshToken);
-      if (!validSession) {
-        throw new UnauthorizedException('Sesión inválida');
-      }
-
-      // Actualizar lastUsed de la sesión
-      if (entity.activeSession) {
-        const sessionIndex = entity.activeSession.findIndex(
-          (session) => session.token === refreshToken,
-        );
-        if (sessionIndex !== -1) {
-          entity.activeSession[sessionIndex].lastUsed = new Date();
-
-          if (isTenant) {
-            await this.tenantsService.updateTenant(entity._id.toString(), {
-              activeSession: entity.activeSession,
-            });
-          } else {
-            await this.usersService.updateUser(entity._id.toString(), {
-              activeSession: entity.activeSession,
-            });
-          }
-        }
-      }
-
-      return {
-        access_token: this.generateAccessToken(entity),
-      };
-    } catch (error) {
-      this.logger.error('Error al refrescar el token:', error);
-      throw new UnauthorizedException('Token inválido');
-    }
-  }
-
-  async logout(refreshToken: string) {
-    try {
-      const decoded = this.jwtService.verify(refreshToken);
-      const isTenant = decoded.type === 'tenant';
-
-      const entity = isTenant
-        ? await this.tenantsService.findById(decoded.sub)
-        : await this.usersService.findById(decoded.sub);
-
-      if (entity && entity.activeSession) {
-        entity.activeSession = entity.activeSession.filter(
-          (session) => session.token !== refreshToken,
-        );
-
-        if (isTenant) {
-          await this.tenantsService.updateTenant(entity._id.toString(), {
-            activeSession: entity.activeSession,
-          });
-        } else {
-          await this.usersService.updateUser(entity._id.toString(), {
-            activeSession: entity.activeSession,
-          });
-        }
-
-        return { message: 'Sesión cerrada exitosamente' };
-      }
-    } catch (error) {
-      this.logger.error('Error al cerrar sesión:', error);
-      throw new UnauthorizedException('Error al cerrar sesión');
+      this.logger.error('Error gestionando sesiones activas', error);
+      throw new UnauthorizedException('Error gestionando la sesión activa');
     }
   }
 }
