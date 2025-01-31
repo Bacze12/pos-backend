@@ -32,6 +32,22 @@ export class ProductsController {
     return this.productsService.findAll(tenantId);
   }
 
+  @Get(':id')
+  @ApiOperation({
+    summary: 'Obtener un producto',
+    description: 'Devuelve un producto para el tenant actual.',
+  })
+  @ApiResponse({ status: 200, description: 'Producto recuperado con éxito.' })
+  @ApiResponse({ status: 404, description: 'Producto no encontrado.' })
+  async getProduct(@TenantId() tenantId: string, @Param('id') id: string) {
+    const product = await this.productsService.findById(tenantId, id);
+    if (!product) {
+      throw new BadRequestException('Producto no encontrado.');
+    }
+
+    return product;
+  }
+
   @Post()
   @ApiOperation({
     summary: 'Crear un nuevo producto',

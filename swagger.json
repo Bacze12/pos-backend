@@ -636,6 +636,37 @@
       }
     },
     "/products/{id}": {
+      "get": {
+        "description": "Devuelve un producto para el tenant actual.",
+        "operationId": "ProductsController_getProduct",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Producto recuperado con éxito."
+          },
+          "404": {
+            "description": "Producto no encontrado."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Obtener un producto",
+        "tags": [
+          "products"
+        ]
+      },
       "delete": {
         "description": "Elimina un producto asociado al tenant actual.",
         "operationId": "ProductsController_remove",
