@@ -19,47 +19,40 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   private readonly logger = new Logger(JwtStrategy.name);
 
   async validate(payload: any) {
-    if (!payload || !payload.tenantId) {
+    Logger.debug('JWT Payload:', payload);
+
+    const tenantId = payload.tenantId;
+    const isTenant = payload.businessName && !payload.username;
+
+    if (!tenantId) {
       throw new UnauthorizedException('Token inválido - Falta tenantId');
     }
 
-    // Verificar si es un usuario o un tenant
-    const isUserPayload = payload.username || payload.name;
-
-    let user;
-    if (isUserPayload) {
-      // Lógica para usuarios
-      user = await this.usersService.findByEmailAndTenant(payload.email, payload.tenantId);
-
-      if (!user) {
-        throw new UnauthorizedException('Usuario no encontrado');
-      }
-
-      if (!user.isActive) {
-        throw new UnauthorizedException('Usuario inactivo');
-      }
-    } else {
-      // Lógica para tenants
-      user = await this.tenantsService.findByBusinessNameAndEmail(
-        payload.businessName,
-        payload.email,
-      );
-
-      if (!user) {
+    if (isTenant) {
+      const tenant = await this.tenantsService.findById(tenantId);
+      if (!tenant) {
         throw new UnauthorizedException('Tenant no encontrado');
       }
+
+      return {
+        tenantId: tenant._id,
+        email: payload.email,
+        businessName: payload.businessName,
+        role: 'ADMIN',
+      };
     }
 
-    const tenant = await this.tenantsService.findById(payload.tenantId);
-    if (!tenant || !tenant.isActive) {
-      throw new UnauthorizedException('Tenant inactivo');
+    // Si es un usuario
+    const user = await this.usersService.findByEmailAndTenant(payload.email, tenantId);
+    if (!user) {
+      throw new UnauthorizedException('Usuario no encontrado');
     }
 
     return {
       tenantId: payload.tenantId,
       email: payload.email,
-      name: payload.username || payload.businessName,
-      role: payload.role || 'ADMIN',
+      username: payload.username,
+      role: payload.role,
     };
   }
 }

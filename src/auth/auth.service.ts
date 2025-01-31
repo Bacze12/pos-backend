@@ -1,12 +1,15 @@
-import { Injectable, UnauthorizedException, Inject, forwardRef } from '@nestjs/common';
+import { Injectable, UnauthorizedException, Inject, forwardRef, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { TenantsService } from '../modules/tenants/tenants.service';
 import { UsersService } from '../modules/users/users.service';
 import { verifyPassword } from '../middleware/crypto.middleware';
 import { User } from '../modules/users/users.schema';
+import { Tenant } from '@/modules/tenants/tenants.schema';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private readonly jwtService: JwtService,
     private readonly tenantsService: TenantsService,
@@ -35,13 +38,6 @@ export class AuthService {
     throw new UnauthorizedException('Credenciales inválidas');
   }
 
-  /**
-   * Authenticates a tenant based on business name, email, and password.
-   * @param businessName - The business name associated with the tenant.
-   * @param email - The email of the tenant.
-   * @param password - The password of the tenant.
-   * @returns An object containing the access token if authentication is successful.
-   */
   private async authenticateTenant(businessName: string, email: string, password: string) {
     const tenant = await this.tenantsService.findByBusinessNameAndEmail(businessName, email);
     if (tenant) {
@@ -54,27 +50,22 @@ export class AuthService {
         throw new UnauthorizedException('Credenciales inválidas');
       }
 
-      const payload = {
-        tenantId: tenant._id,
-        businessName: tenant.businessName,
-        email: tenant.email,
-        role: 'ADMIN',
-      };
+      const accessToken = this.generateAccessToken(tenant);
+      const refreshToken = this.generateRefreshToken(tenant);
+
+      await this.manageActiveSessions(tenant, refreshToken);
 
       return {
-        access_token: this.jwtService.sign(payload),
+        access_token: accessToken,
+        refresh_token: refreshToken,
+        role: 'ADMIN',
+        businessName: tenant.businessName,
+        email: tenant.email,
       };
     }
     return null;
   }
 
-  /**
-   * Authenticates a user based on business name, email, and password.
-   * @param businessName - The business name associated with the user.
-   * @param email - The email of the user.
-   * @param password - The password of the user.
-   * @returns An object containing the access token and refresh token if authentication is successful.
-   */
   private async authenticateUser(businessName: string, email: string, password: string) {
     const tenantFromBusiness = await this.tenantsService.findByBusinessName(businessName);
     if (!tenantFromBusiness) {
@@ -106,117 +97,60 @@ export class AuthService {
     return {
       access_token: accessToken,
       refresh_token: refreshToken,
+      role: user.role,
+      username: user.name,
+      email: user.email,
     };
   }
 
-  /**
-   * Generates an access token for a user.
-   * @param user - The user for whom the access token is generated.
-   * @returns The generated access token.
-   */
-  private generateAccessToken(user: User) {
-    const payload = {
-      tenantId: user.tenantId,
-      username: user.name,
-      email: user.email,
-      role: user.role,
-    };
+  private generateAccessToken(entity: User | Tenant) {
+    const isTenant = 'businessName' in entity;
+
+    const payload = isTenant
+      ? {
+          tenantId: entity._id.toString(),
+          businessName: (entity as Tenant).businessName,
+          email: entity.email,
+          role: 'ADMIN',
+        }
+      : {
+          tenantId: (entity as User).tenantId.toString(),
+          username: (entity as User).name,
+          email: entity.email,
+          role: (entity as User).role,
+        };
+
     return this.jwtService.sign(payload, { expiresIn: '15m' });
   }
 
-  /**
-   * Generates a refresh token for a user.
-   * @param user - The user for whom the refresh token is generated.
-   * @returns The generated refresh token.
-   */
-  private generateRefreshToken(user: User) {
+  private generateRefreshToken(entity: User | Tenant) {
     const payload = {
-      sub: user._id,
-      tenantId: user.tenantId,
+      sub: entity._id.toString(),
+      tenantId: 'businessName' in entity ? entity._id.toString() : (entity as User).tenantId.toString(),
+      type: 'businessName' in entity ? 'tenant' : 'user',
     };
     return this.jwtService.sign(payload, { expiresIn: '7d' });
   }
 
-  /**
-   * Manages the active sessions for a user, ensuring the session limit is not exceeded.
-   * @param user - The user whose sessions are being managed.
-   * @param newRefreshToken - The new refresh token to be added to the active sessions.
-   */
-  private async manageActiveSessions(user: User, newRefreshToken: string) {
-    const MAX_SESSIONS = user.maxActiveSessions || 3;
-
-    if (user.activeSession.length >= MAX_SESSIONS) {
-      user.activeSession.shift();
-    }
-
-    user.activeSession.push({
-      token: newRefreshToken,
-      createdAt: new Date(),
-      lastUsed: new Date(),
-      deviceInfo: this.getDeviceInfo(),
-    });
-
-    await this.usersService.updateUser(user.id, {
-      activeSession: user.activeSession,
-    });
-  }
-
-  /**
-   * Retrieves device information for session management.
-   * @returns A placeholder string for device information.
-   */
-  private getDeviceInfo() {
-    return 'Device Info Placeholder';
-  }
-
-  /**
-   * Refreshes the access token using a valid refresh token.
-   * @param refreshToken - The refresh token used to generate a new access token.
-   * @returns An object containing the new access token.
-   */
-  async refreshAccessToken(refreshToken: string) {
+  private async manageActiveSessions(entity: User | Tenant, newRefreshToken: string) {
     try {
-      const decoded = this.jwtService.verify(refreshToken);
-
-      const user = await this.usersService.findById(decoded.sub);
-
-      if (!user || !user.isActive) {
-        throw new UnauthorizedException('Usuario inválido o inactivo');
+      if (!entity.activeSession) {
+        entity.activeSession = [];
       }
 
-      const validSession = user.activeSession.some((session) => session.token === refreshToken);
+      const MAX_SESSIONS = entity.maxActiveSessions || 3;
+      this.logger.debug(`Sesiones activas: ${entity.activeSession.length}, Máximo permitido: ${MAX_SESSIONS}`);
 
-      if (!validSession) {
-        throw new UnauthorizedException('Sesión inválida');
+      if (entity.activeSession.length >= MAX_SESSIONS) {
+        entity.activeSession.shift(); // Elimina la sesión más antigua
       }
 
-      return {
-        access_token: this.generateAccessToken(user),
-      };
+      entity.activeSession.push(newRefreshToken);
+      // Aquí se debería guardar el cambio en la base de datos, por ejemplo:
+      // await this.tenantsService.update(entity._id, { activeSession: entity.activeSession });
     } catch (error) {
-      throw new UnauthorizedException('Token inválido');
-    }
-  }
-
-  /**
-   * Logs out a user by removing the refresh token from active sessions.
-   * @param refreshToken - The refresh token to be removed from active sessions.
-   */
-  async logout(refreshToken: string) {
-    try {
-      const decoded = this.jwtService.verify(refreshToken);
-
-      const user = await this.usersService.findById(decoded.sub);
-
-      if (user) {
-        user.activeSession = user.activeSession.filter((session) => session.token !== refreshToken);
-
-        await this.usersService.updateUser(user.id, {
-          activeSession: user.activeSession,
-        });
-      }
-    } catch (error) {
-      throw new UnauthorizedException('Error al cerrar sesión');
+      this.logger.error('Error gestionando sesiones activas', error);
+      throw new UnauthorizedException('Error gestionando la sesión activa');
     }
   }
 }

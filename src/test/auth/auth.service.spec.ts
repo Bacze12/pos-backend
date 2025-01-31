@@ -19,6 +19,7 @@ describe('AuthService', () => {
   const mockTenantsService = {
     findByBusinessName: jest.fn(),
     findByBusinessNameAndEmail: jest.fn(),
+    updateTenant: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -58,13 +59,26 @@ describe('AuthService', () => {
         'Test Business',
         'test@test.com',
       );
-      expect(mockJwtService.sign).toHaveBeenCalledWith({
-        tenantId: 'mockTenantId',
-        businessName: 'Test Business',
-        email: 'test@test.com',
-        role: 'ADMIN',
-      });
-      expect(result).toEqual({ access_token: 'mockToken' });
+      expect(mockJwtService.sign).toHaveBeenNthCalledWith(
+        1,
+        {
+          tenantId: 'mockTenantId',
+          businessName: 'Test Business',
+          email: 'test@test.com',
+          role: 'ADMIN',
+        },
+        { expiresIn: '15m' },
+      );
+
+      expect(mockJwtService.sign).toHaveBeenNthCalledWith(
+        2,
+        {
+          sub: 'mockTenantId',
+          tenantId: 'mockTenantId',
+          type: 'tenant',
+        },
+        { expiresIn: '7d' },
+      );
     });
 
     it('debería retornar un token JWT para credenciales correctas con findByBusinessName', async () => {
@@ -113,6 +127,7 @@ describe('AuthService', () => {
         {
           sub: 'mockUserId',
           tenantId: 'mockTenantId',
+          type: 'user',
         },
         { expiresIn: '7d' },
       );
@@ -121,6 +136,9 @@ describe('AuthService', () => {
       expect(result).toEqual({
         access_token: 'accessToken',
         refresh_token: 'refreshToken',
+        email: 'test@test.com',
+        role: 'USER',
+        username: 'Test User',
       });
     });
 

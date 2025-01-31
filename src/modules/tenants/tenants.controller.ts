@@ -1,8 +1,9 @@
-import { Controller, Post, Body, Get, Logger } from '@nestjs/common';
+import { Controller, Post, Body, Get, Logger, Patch, UseGuards } from '@nestjs/common';
 import { TenantsService } from './tenants.service';
-import { CreateTenantDto } from './tenants.dto';
+import { CreateTenantDto, UpdateTenantPasswordDto } from './tenants.dto';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { TenantId } from '../../common/decorator/tenant-id.decorator';
+import { AuthGuard } from '@nestjs/passport';
 
 @ApiTags('tenants')
 @Controller('tenants')
@@ -45,5 +46,21 @@ export class TenantsController {
       this.logger.error('Error al crear tenant:', error.message);
       throw error;
     }
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Patch('password')
+  // @Roles('OWNER') // Solo el OWNER puede cambiar su contraseña
+  @ApiOperation({
+    summary: 'Actualizar contraseña del tenant',
+    description: 'Permite al OWNER actualizar su contraseña.',
+  })
+  @ApiResponse({ status: 200, description: 'Contraseña actualizada con éxito.' })
+  @ApiResponse({ status: 401, description: 'No autorizado.' })
+  async updateTenantPassword(
+    @TenantId() tenantId: string,
+    @Body() updatePasswordDto: UpdateTenantPasswordDto,
+  ) {
+    return this.tenantsService.updatePassword(tenantId, updatePasswordDto.newPassword);
   }
 }

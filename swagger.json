@@ -31,12 +31,15 @@
     },
     "/tenants": {
       "get": {
-        "description": "Devuelve una lista de todos los tenants registrados.",
+        "description": "Devuelve una lista de todos los tenants registrados (requiere autenticación).",
         "operationId": "TenantsController_getTenants",
         "parameters": [],
         "responses": {
           "200": {
             "description": "Lista de tenants recuperada exitosamente."
+          },
+          "401": {
+            "description": "No autorizado."
           }
         },
         "summary": "Obtener todos los tenants",
@@ -45,7 +48,7 @@
         ]
       },
       "post": {
-        "description": "Crea un nuevo tenant con su nombre de negocio y correo electrónico.",
+        "description": "Crea un nuevo tenant padre con su nombre de negocio y correo electrónico.",
         "operationId": "TenantsController_createTenant",
         "parameters": [],
         "requestBody": {
@@ -67,6 +70,35 @@
           }
         },
         "summary": "Crear un nuevo tenant",
+        "tags": [
+          "tenants"
+        ]
+      }
+    },
+    "/tenants/password": {
+      "patch": {
+        "description": "Permite al OWNER actualizar su contraseña.",
+        "operationId": "TenantsController_updateTenantPassword",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTenantPasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Contraseña actualizada con éxito."
+          },
+          "401": {
+            "description": "No autorizado."
+          }
+        },
+        "summary": "Actualizar contraseña del tenant",
         "tags": [
           "tenants"
         ]
@@ -265,17 +297,63 @@
         ]
       }
     },
+    "/users/{id}/active": {
+      "patch": {
+        "description": "Cambia el estado activo/inactivo de un usuario del tenant actual.",
+        "operationId": "UsersController_updateUserStatus",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "isActive": {
+                    "type": "boolean",
+                    "description": "true para activar, false para desactivar"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Estado de usuario actualizado con éxito."
+          },
+          "404": {
+            "description": "Usuario no encontrado."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Activar/Desactivar usuario",
+        "tags": [
+          "users"
+        ]
+      }
+    },
     "/categories": {
       "get": {
-        "description": "Devuelve una lista de todas las categorías asociadas al tenant actual.",
+        "description": "Devuelve categorías del tenant actual",
         "operationId": "CategoriesController_findAll",
         "parameters": [],
         "responses": {
           "200": {
             "description": "Categorías recuperadas con éxito."
-          },
-          "401": {
-            "description": "No autorizado. Falta el token JWT o es inválido."
           }
         },
         "security": [
@@ -289,7 +367,7 @@
         ]
       },
       "post": {
-        "description": "Crea una nueva categoría asociada al tenant actual.",
+        "description": "Crea una categoría para el tenant actual",
         "operationId": "CategoriesController_create",
         "parameters": [],
         "requestBody": {
@@ -305,9 +383,6 @@
         "responses": {
           "201": {
             "description": "Categoría creada con éxito."
-          },
-          "400": {
-            "description": "Datos de entrada inválidos."
           }
         },
         "security": [
@@ -315,7 +390,7 @@
             "bearer": []
           }
         ],
-        "summary": "Crear una nueva categoría",
+        "summary": "Crear nueva categoría",
         "tags": [
           "categories"
         ]
@@ -323,7 +398,7 @@
     },
     "/categories/{id}": {
       "patch": {
-        "description": "Actualiza los datos de una categoría existente para el tenant actual.",
+        "description": "Actualiza una categoría del tenant actual",
         "operationId": "CategoriesController_update",
         "parameters": [
           {
@@ -348,9 +423,6 @@
         "responses": {
           "200": {
             "description": "Categoría actualizada con éxito."
-          },
-          "404": {
-            "description": "Categoría no encontrada."
           }
         },
         "security": [
@@ -358,13 +430,13 @@
             "bearer": []
           }
         ],
-        "summary": "Actualizar una categoría",
+        "summary": "Actualizar categoría",
         "tags": [
           "categories"
         ]
       },
       "delete": {
-        "description": "Elimina una categoría asociada al tenant actual.",
+        "description": "Elimina una categoría del tenant actual",
         "operationId": "CategoriesController_remove",
         "parameters": [
           {
@@ -379,9 +451,6 @@
         "responses": {
           "200": {
             "description": "Categoría eliminada con éxito."
-          },
-          "404": {
-            "description": "Categoría no encontrada."
           }
         },
         "security": [
@@ -389,7 +458,7 @@
             "bearer": []
           }
         ],
-        "summary": "Eliminar una categoría",
+        "summary": "Eliminar categoría",
         "tags": [
           "categories"
         ]
@@ -397,15 +466,12 @@
     },
     "/suppliers": {
       "get": {
-        "description": "Devuelve una lista de todos los proveedores asociados al tenant actual.",
+        "description": "Devuelve proveedores del tenant actual",
         "operationId": "SuppliersController_getSuppliers",
         "parameters": [],
         "responses": {
           "200": {
             "description": "Lista de proveedores recuperada con éxito."
-          },
-          "401": {
-            "description": "No autorizado. Falta token JWT o es inválido."
           }
         },
         "security": [
@@ -419,7 +485,7 @@
         ]
       },
       "post": {
-        "description": "Crea un nuevo proveedor para el tenant actual.",
+        "description": "Crea un proveedor para el tenant actual",
         "operationId": "SuppliersController_createSupplier",
         "parameters": [],
         "requestBody": {
@@ -435,9 +501,6 @@
         "responses": {
           "201": {
             "description": "Proveedor creado con éxito."
-          },
-          "400": {
-            "description": "Datos de entrada inválidos."
           }
         },
         "security": [
@@ -451,19 +514,11 @@
         ]
       }
     },
-    "/suppliers/{tenantId}/{supplierId}": {
+    "/suppliers/{supplierId}": {
       "patch": {
-        "description": "Actualiza los datos de un proveedor existente para el tenant especificado.",
+        "description": "Actualiza un proveedor del tenant actual",
         "operationId": "SuppliersController_updateSupplier",
         "parameters": [
-          {
-            "name": "tenantId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          },
           {
             "name": "supplierId",
             "required": true,
@@ -486,9 +541,6 @@
         "responses": {
           "200": {
             "description": "Proveedor actualizado con éxito."
-          },
-          "404": {
-            "description": "Proveedor no encontrado."
           }
         },
         "security": [
@@ -502,17 +554,9 @@
         ]
       },
       "delete": {
-        "description": "Elimina un proveedor asociado al tenant especificado.",
+        "description": "Elimina un proveedor del tenant actual",
         "operationId": "SuppliersController_deleteSupplier",
         "parameters": [
-          {
-            "name": "tenantId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          },
           {
             "name": "supplierId",
             "required": true,
@@ -525,9 +569,6 @@
         "responses": {
           "200": {
             "description": "Proveedor eliminado con éxito."
-          },
-          "404": {
-            "description": "Proveedor no encontrado."
           }
         },
         "security": [
@@ -549,9 +590,6 @@
         "responses": {
           "200": {
             "description": "Productos recuperados con éxito."
-          },
-          "401": {
-            "description": "No autorizado. Falta el tenantId o el token JWT es inválido."
           }
         },
         "security": [
@@ -584,9 +622,6 @@
           },
           "400": {
             "description": "Datos de entrada inválidos."
-          },
-          "401": {
-            "description": "No autorizado. Falta el tenantId o el token JWT es inválido."
           }
         },
         "security": [
@@ -600,9 +635,73 @@
         ]
       }
     },
+    "/products/{id}": {
+      "get": {
+        "description": "Devuelve un producto para el tenant actual.",
+        "operationId": "ProductsController_getProduct",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Producto recuperado con éxito."
+          },
+          "404": {
+            "description": "Producto no encontrado."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Obtener un producto",
+        "tags": [
+          "products"
+        ]
+      },
+      "delete": {
+        "description": "Elimina un producto asociado al tenant actual.",
+        "operationId": "ProductsController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Producto eliminado con éxito."
+          },
+          "400": {
+            "description": "Error al eliminar el producto."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Eliminar un producto",
+        "tags": [
+          "products"
+        ]
+      }
+    },
     "/sales": {
       "get": {
-        "description": "Devuelve una lista de todas las ventas asociadas al tenant actual.",
+        "description": "Devuelve una lista de todas las ventas del tenant actual.",
         "operationId": "SalesController_getSales",
         "parameters": [],
         "responses": {
@@ -610,7 +709,7 @@
             "description": "Ventas recuperadas con éxito."
           },
           "401": {
-            "description": "No autorizado. Falta el token JWT o es inválido."
+            "description": "No autorizado."
           }
         },
         "security": [
@@ -624,7 +723,7 @@
         ]
       },
       "post": {
-        "description": "Crea una nueva venta asociada al tenant actual.",
+        "description": "Crea una nueva venta para el tenant actual.",
         "operationId": "SalesController_createSale",
         "parameters": [],
         "requestBody": {
@@ -642,7 +741,7 @@
             "description": "Venta creada con éxito."
           },
           "400": {
-            "description": "Datos de entrada inválidos."
+            "description": "Datos inválidos."
           }
         },
         "security": [
@@ -658,7 +757,7 @@
     },
     "/sales/shift/{shiftId}": {
       "get": {
-        "description": "Devuelve las ventas asociadas a un turno específico del tenant actual.",
+        "description": "Devuelve las ventas asociadas a un turno del tenant actual.",
         "operationId": "SalesController_getSalesByShift",
         "parameters": [
           {
@@ -672,7 +771,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Ventas por turno recuperadas con éxito."
+            "description": "Ventas por turno recuperadas."
           },
           "404": {
             "description": "Turno no encontrado."
@@ -689,19 +788,11 @@
         ]
       }
     },
-    "/sales/{tenantId}/{saleId}": {
+    "/sales/{saleId}": {
       "put": {
-        "description": "Actualiza los datos de una venta específica para el tenant especificado.",
+        "description": "Actualiza una venta específica del tenant actual.",
         "operationId": "SalesController_updateSale",
         "parameters": [
-          {
-            "name": "tenantId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          },
           {
             "name": "saleId",
             "required": true,
@@ -723,7 +814,7 @@
         },
         "responses": {
           "200": {
-            "description": "Venta actualizada con éxito."
+            "description": "Venta actualizada."
           },
           "404": {
             "description": "Venta no encontrada."
@@ -740,17 +831,9 @@
         ]
       },
       "delete": {
-        "description": "Elimina una venta asociada al tenant especificado.",
+        "description": "Elimina una venta del tenant actual.",
         "operationId": "SalesController_deleteSale",
         "parameters": [
-          {
-            "name": "tenantId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          },
           {
             "name": "saleId",
             "required": true,
@@ -762,7 +845,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Venta eliminada con éxito."
+            "description": "Venta eliminada."
           },
           "404": {
             "description": "Venta no encontrada."
@@ -781,7 +864,7 @@
     },
     "/shifts": {
       "post": {
-        "description": "Crea un turno asociado al tenant actual.",
+        "description": "Crea un turno para el tenant actual",
         "operationId": "ShiftsController_createShift",
         "parameters": [],
         "requestBody": {
@@ -797,9 +880,6 @@
         "responses": {
           "201": {
             "description": "Turno creado con éxito."
-          },
-          "400": {
-            "description": "Datos de entrada inválidos."
           }
         },
         "security": [
@@ -807,25 +887,17 @@
             "bearer": []
           }
         ],
-        "summary": "Crear un nuevo turno",
+        "summary": "Crear nuevo turno",
         "tags": [
           "shifts"
         ]
       }
     },
-    "/shifts/{tenantId}/{shiftId}": {
+    "/shifts/{shiftId}": {
       "put": {
-        "description": "Actualiza los datos de un turno existente para el tenant especificado.",
+        "description": "Actualiza un turno del tenant actual",
         "operationId": "ShiftsController_updateShift",
         "parameters": [
-          {
-            "name": "tenantId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          },
           {
             "name": "shiftId",
             "required": true,
@@ -838,9 +910,6 @@
         "responses": {
           "200": {
             "description": "Turno actualizado con éxito."
-          },
-          "404": {
-            "description": "Turno no encontrado."
           }
         },
         "security": [
@@ -848,23 +917,15 @@
             "bearer": []
           }
         ],
-        "summary": "Actualizar un turno",
+        "summary": "Actualizar turno",
         "tags": [
           "shifts"
         ]
       },
       "delete": {
-        "description": "Elimina un turno asociado al tenant especificado.",
+        "description": "Elimina un turno del tenant actual",
         "operationId": "ShiftsController_deleteShift",
         "parameters": [
-          {
-            "name": "tenantId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          },
           {
             "name": "shiftId",
             "required": true,
@@ -877,9 +938,6 @@
         "responses": {
           "200": {
             "description": "Turno eliminado con éxito."
-          },
-          "404": {
-            "description": "Turno no encontrado."
           }
         },
         "security": [
@@ -887,7 +945,7 @@
             "bearer": []
           }
         ],
-        "summary": "Eliminar un turno",
+        "summary": "Eliminar turno",
         "tags": [
           "shifts"
         ]
@@ -895,7 +953,7 @@
     },
     "/shifts/{shiftId}/close": {
       "patch": {
-        "description": "Cierra un turno especificando el efectivo final.",
+        "description": "Cierra un turno con el efectivo final",
         "operationId": "ShiftsController_closeShift",
         "parameters": [
           {
@@ -920,12 +978,6 @@
         "responses": {
           "200": {
             "description": "Turno cerrado con éxito."
-          },
-          "400": {
-            "description": "Datos de entrada inválidos."
-          },
-          "404": {
-            "description": "Turno no encontrado."
           }
         },
         "security": [
@@ -933,7 +985,7 @@
             "bearer": []
           }
         ],
-        "summary": "Cerrar un turno",
+        "summary": "Cerrar turno",
         "tags": [
           "shifts"
         ]
@@ -965,18 +1017,10 @@
         ]
       }
     },
-    "/saleItems/{tenantId}/{saleItemId}": {
+    "/saleItems/{saleItemId}": {
       "put": {
         "operationId": "SaleItemsController_updateSaleItem",
         "parameters": [
-          {
-            "name": "tenantId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          },
           {
             "name": "saleItemId",
             "required": true,
@@ -998,14 +1042,6 @@
       "delete": {
         "operationId": "SaleItemsController_deleteSaleItem",
         "parameters": [
-          {
-            "name": "tenantId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          },
           {
             "name": "saleItemId",
             "required": true,
@@ -1065,6 +1101,19 @@
         "required": [
           "businessName",
           "email"
+        ]
+      },
+      "UpdateTenantPasswordDto": {
+        "type": "object",
+        "properties": {
+          "newPassword": {
+            "type": "string",
+            "description": "Nueva contraseña",
+            "example": "NuevaClaveSegura123!"
+          }
+        },
+        "required": [
+          "newPassword"
         ]
       },
       "LoginDto": {

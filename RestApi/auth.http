@@ -1,6 +1,8 @@
 @password = 22c686ea535d7e238e37f7f97c4e83ba
 @password2 = ff6173272bd3567f78e5e50e61349432
 
+@password3 = asd123
+
 ### Login 
 POST http://localhost:5000/auth/login
 Content-Type: application/json
@@ -19,4 +21,23 @@ Content-Type: application/json
   "businessName": "Pelaitopaez2",
   "email": "papa2@gmail.com",
   "password": "a3b8616138ad655b3e84b52c371eb951"
+}
+
+### Login 
+POST http://localhost:5000/auth/login
+Content-Type: application/json
+
+{
+  "businessName": "bruno",
+  "email": "bruno@gmail.com",
+  "password": "{{password3}}"
+}
+
+### Login
+POST http://localhost:5000/auth/refresh
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2NzhhYTUwZDU0MzQwMjhmNjU1YmFlY2MiLCJ0ZW5hbnRJZCI6IjY3OGFhNGNhNTQzNDAyOGY2NTViYWVjOCIsInR5cGUiOiJ1c2VyIiwiaWF0IjoxNzM4MTgzMDY1LCJleHAiOjE3Mzg3ODc4NjV9.PlF8_1lFqLeqtgLLWQwx_a5WwbQA8y7Ao6mmwWnm_Xo
+
+{
+  "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2NzhhYTUwZDU0MzQwMjhmNjU1YmFlY2MiLCJ0ZW5hbnRJZCI6IjY3OGFhNGNhNTQzNDAyOGY2NTViYWVjOCIsInR5cGUiOiJ1c2VyIiwiaWF0IjoxNzM4MTgzMDY1LCJleHAiOjE3Mzg3ODc4NjV9.PlF8_1lFqLeqtgLLWQwx_a5WwbQA8y7Ao6mmwWnm_Xo"
 }

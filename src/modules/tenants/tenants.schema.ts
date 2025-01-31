@@ -14,6 +14,17 @@ export class Tenant extends Document {
 
   @Prop({ default: true })
   isActive: boolean;
+
+  @Prop({ type: [Object], default: [] })
+  activeSession: {
+    token: string;
+    createdAt: Date;
+    lastUsed: Date;
+    deviceInfo: string;
+  }[];
+
+  @Prop({ default: 3 })
+  maxActiveSessions: number;
 }
 
 export const TenantSchema = SchemaFactory.createForClass(Tenant);
