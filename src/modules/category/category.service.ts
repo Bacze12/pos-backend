@@ -8,7 +8,7 @@ export class CategoryService {
   constructor(@InjectModel(Category.name) private readonly categoryModel: Model<Category>) {}
 
   async findAll(tenantId: string) {
-    return this.categoryModel.find({ tenantId, isActive: true });
+    return this.categoryModel.find({ tenantId });
   }
 
   async create(createCategoryDto: any) {
