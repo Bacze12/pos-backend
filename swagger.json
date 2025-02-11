@@ -1060,6 +1060,77 @@
           "SaleItems"
         ]
       }
+    },
+    "/inventory": {
+      "post": {
+        "operationId": "InventoryController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateInventoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The inventory has been successfully created."
+          },
+          "400": {
+            "description": "Bad Request."
+          }
+        },
+        "summary": "Create inventory item",
+        "tags": [
+          "Inventory"
+        ]
+      },
+      "get": {
+        "operationId": "InventoryController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of all inventory items."
+          },
+          "404": {
+            "description": "No inventory items found."
+          }
+        },
+        "summary": "Get all inventory items",
+        "tags": [
+          "Inventory"
+        ]
+      }
+    },
+    "/inventory/{id}": {
+      "get": {
+        "operationId": "InventoryController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The found inventory item."
+          },
+          "404": {
+            "description": "Inventory item not found."
+          }
+        },
+        "summary": "Get inventory item by id",
+        "tags": [
+          "Inventory"
+        ]
+      }
     }
   },
   "info": {
@@ -1408,6 +1479,23 @@
         },
         "required": [
           "finalCash"
+        ]
+      },
+      "CreateInventoryDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "IN",
+              "OUT"
+            ],
+            "description": "Type of inventory movement",
+            "example": "IN"
+          }
+        },
+        "required": [
+          "type"
         ]
       }
     }

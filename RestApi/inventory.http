@@ -1,0 +1,17 @@
+@url = http://localhost:5000/inventory
+
+### POST /api/inventory
+POST {{url}}
+Content-Type: application/json
+
+{
+    "productId": "678aaa385434028f655baed3",
+    "userId": "6790eba9a62a4a3408e6757a",
+    "quantity": 10,
+    "type": "IN"
+
+}
+
+### GET /api/inventory
+GET {{url}}
+Content-Type: application/json

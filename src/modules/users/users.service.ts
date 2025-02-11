@@ -41,25 +41,6 @@ export class UsersService {
   }
 
   /**
-   * Updates a user by ID.
-   * @param id - The ID of the user.
-   * @param updateData - The data to update the user with.
-   * @returns The updated user.
-   * @throws NotFoundException if the user is not found.
-   */
-  async updateUser(id: string, updateData: Partial<User>) {
-    this.logger.log(`Actualizando usuario con id: ${id}`, updateData);
-
-    const user = await this.userModel.findByIdAndUpdate(id, updateData, { new: true }).exec();
-
-    if (!user) {
-      throw new NotFoundException('Usuario no encontrado');
-    }
-
-    return user;
-  }
-
-  /**
    * Finds a user by ID and tenant ID.
    * @param id - The ID of the user.
    * @param tenantId - The tenant ID associated with the user.

@@ -19,6 +19,7 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
 import { MemoryTrackingInterceptor } from './interceptor/memory-tracking.interceptor';
 import { MetricsService } from './metrics.service';
 import { MetricsController } from './metrics.controller';
+import { InventoryModule } from './modules/inventory/inventory.module';
 
 dotenv.config();
 
@@ -46,6 +47,7 @@ dotenv.config();
     SalesModule,
     SaleItemModule,
     ShiftModule,
+    InventoryModule,
   ],
   controllers: [AppController, MetricsController],
   providers: [
