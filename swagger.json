@@ -133,6 +133,48 @@
         ]
       }
     },
+    "/auth/logout": {
+      "post": {
+        "operationId": "AuthController_logout",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Cierre de sesión exitoso"
+          },
+          "401": {
+            "description": "No autorizado"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cerrar sesión",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/refresh": {
+      "post": {
+        "description": "Permite a los usuarios obtener un nuevo token de acceso.",
+        "operationId": "AuthController_refreshToken",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Token de acceso actualizado"
+          },
+          "401": {
+            "description": "Refresh token inválido o expirado"
+          }
+        },
+        "summary": "Refrescar token de acceso",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
     "/users": {
       "get": {
         "description": "Devuelve todos los usuarios asociados al tenant actual.",

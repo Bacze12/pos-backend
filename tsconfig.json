@@ -24,5 +24,9 @@
     "esModuleInterop": true,
     "allowJs": true
   },
+  "include": [
+    "src/**/*.ts",  // Archivos fuente
+    "test/**/*.ts"  // Archivos de prueba
+  ],
   "exclude": ["node_modules", "dist"]
 }

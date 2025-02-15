@@ -1,7 +1,8 @@
 import { Controller, Get, Post, Delete, Body, Param, UseGuards, Patch } from '@nestjs/common';
 import { SupplierService } from './supplier.service';
 import { AuthGuard } from '@nestjs/passport';
-import { CreateSupplierDto, UpdateSupplierDto } from './supplier.dto';
+import { CreateSupplierDto } from './dto/create-supplier.dto';
+import { UpdateSupplierDto } from './dto/update-supplier.dto';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { TenantId } from '../../common/decorator/tenant-id.decorator';
 

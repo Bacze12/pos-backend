@@ -1,6 +1,7 @@
 import { Controller, Post, Body, Get, Logger, Patch, UseGuards } from '@nestjs/common';
 import { TenantsService } from './tenants.service';
-import { CreateTenantDto, UpdateTenantPasswordDto } from './tenants.dto';
+import { CreateTenantDto } from './dto/create-tenants.dto';
+import { UpdateTenantPasswordDto } from './dto/update-tenants.dto';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { TenantId } from '../../common/decorator/tenant-id.decorator';
 import { AuthGuard } from '@nestjs/passport';
@@ -11,6 +12,7 @@ export class TenantsController {
   constructor(private readonly tenantsService: TenantsService) {}
   private readonly logger = new Logger(TenantsController.name);
 
+  @UseGuards(AuthGuard('jwt'))
   @Get()
   @ApiOperation({
     summary: 'Obtener todos los tenants',
@@ -35,12 +37,19 @@ export class TenantsController {
   })
   async createTenant(@Body() tenantData: CreateTenantDto) {
     try {
-      const newTenant = await this.tenantsService.create(tenantData);
+      const result = await this.tenantsService.create(tenantData);
+
+      // Log para debug
+      this.logger.debug('Tenant creado:', result);
 
       return {
-        message: 'Tenant padre creado exitosamente',
-        tenant: newTenant.tenant,
-        password: newTenant.password,
+        message: result.message,
+        tenant: {
+          _id: result.tenant._id,
+          businessName: result.tenant.businessName,
+          email: result.tenant.email,
+        },
+        password: result.password,
       };
     } catch (error) {
       this.logger.error('Error al crear tenant:', error.message);

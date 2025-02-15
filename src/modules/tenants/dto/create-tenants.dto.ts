@@ -5,22 +5,18 @@ export class CreateTenantDto {
   @ApiProperty({
     description: 'Nombre del negocio del tenant',
     example: 'Tech Corp',
+    required: true,
   })
-  @IsString()
-  @IsNotEmpty()
+  @IsString({ message: 'El nombre del negocio debe ser un texto' })
+  @IsNotEmpty({ message: 'El nombre del negocio es requerido' })
   businessName: string;
 
   @ApiProperty({
     description: 'Correo electrónico del tenant',
     example: 'admin@techcorp.com',
+    required: true,
   })
   @IsEmail()
+  @IsNotEmpty({ message: 'El correo electrónico es requerido' })
   email: string;
-}
-
-export class UpdateTenantPasswordDto {
-  @ApiProperty({ description: 'Nueva contraseña', example: 'NuevaClaveSegura123!' })
-  @IsString()
-  @IsNotEmpty()
-  newPassword: string;
 }

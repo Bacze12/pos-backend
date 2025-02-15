@@ -7,6 +7,7 @@ import { UsersController } from './users.controller';
 import { PassportModule } from '@nestjs/passport';
 import { AuthModule } from '../../auth/auth.module';
 import { jwtConfig } from '../../config/jwt.confg';
+import { UsersRepository } from './repositories/users.repository';
 
 @Module({
   imports: [
@@ -16,7 +17,7 @@ import { jwtConfig } from '../../config/jwt.confg';
     forwardRef(() => AuthModule), // Usa forwardRef aquí
   ],
   controllers: [UsersController],
-  providers: [UsersService],
+  providers: [UsersService, UsersRepository],
   exports: [UsersService, MongooseModule],
 })
 export class UsersModule implements NestModule {

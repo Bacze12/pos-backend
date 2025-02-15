@@ -5,118 +5,106 @@ import {
   BadRequestException,
   Logger,
 } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
 import { User } from './users.schema';
 import { hashPassword } from '../../middleware/crypto.middleware';
+import { UsersRepository } from './repositories/users.repository';
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectModel(User.name) private userModel: Model<User>) {}
+  constructor(
+    private usersRepository: UsersRepository, // Inyecta UsersRepository
+    // @InjectModel(User.name) private userModel: Model<User> // ELIMINADO
+  ) {}
   private readonly logger = new Logger(UsersService.name);
 
-  /**
-   * Finds a user by email and tenant ID.
-   * @param email - The email of the user.
-   * @param tenantId - The tenant ID associated with the user.
-   * @returns The user if found, otherwise null.
-   */
   async findByEmailAndTenant(email: string, tenantId: string): Promise<User | null> {
     this.logger.log(`Buscando usuario con email: ${email} y tenantId: ${tenantId}`);
-    return this.userModel.findOne({ email, tenantId }).exec();
+    return this.usersRepository.findByEmailAndTenant(email, tenantId); // Usa UsersRepository
   }
 
-  /**
-   * Finds all users associated with a tenant.
-   * @param tenantId - The tenant ID.
-   * @returns A list of users.
-   * @throws NotFoundException if tenantId is not provided.
-   */
   async findAllByTenant(tenantId: string) {
     if (!tenantId) {
       throw new NotFoundException('El tenantId es obligatorio.');
     }
     this.logger.log(`Buscando todos los usuarios del tenantId: ${tenantId}`);
-    return this.userModel.find({ tenantId }).exec();
+    return this.usersRepository.findAllByTenant(tenantId); // Usa UsersRepository
   }
 
-  /**
-   * Finds a user by ID and tenant ID.
-   * @param id - The ID of the user.
-   * @param tenantId - The tenant ID associated with the user.
-   * @returns The user if found.
-   * @throws NotFoundException if the user is not found.
-   */
   async findById(id: string, tenantId?: string) {
     this.logger.log(`Buscando usuario con id: ${id}`);
-    const user = await this.userModel.findOne({ _id: id, tenantId }).exec();
+    const user = await this.usersRepository.findById(id, tenantId); // Usa UsersRepository
     if (!user) {
       throw new NotFoundException('Usuario no encontrado');
     }
     return user;
   }
 
-  /**
-   * Creates a new user.
-   * @param userData - The data for the new user.
-   * @returns The created user.
-   * @throws BadRequestException if tenantId is not provided.
-   * @throws ConflictException if the email is already in use for the tenant.
-   */
   async create(userData: any) {
-    if (!userData.tenantId) {
-      throw new BadRequestException('El tenantId es requerido');
-    }
-
-    const userExists = await this.userModel
-      .findOne({
-        email: userData.email,
-        tenantId: userData.tenantId,
-      })
-      .exec();
-
-    if (userExists) {
-      throw new ConflictException('El email ya está en uso para este tenant');
-    }
-    this.logger.log(`Creando usuario para tenantId: ${userData.tenantId}`, userData);
     try {
-      // Hashea la contraseña antes de guardarla
-      if (userData.password) {
-        userData.password = hashPassword(userData.password);
+      this.logger.debug('Creating user with data:', userData);
+
+      if (!userData.tenantId) {
+        throw new BadRequestException('El tenantId es requerido');
       }
 
-      const newUser = new this.userModel(userData);
-      const savedUser = await newUser.save();
+      if (!userData.name) {
+        throw new BadRequestException('El nombre es requerido');
+      }
+
+      // Validar que todos los campos requeridos estén presentes
+      const requiredFields = ['email', 'password', 'role'];
+      for (const field of requiredFields) {
+        if (!userData[field]) {
+          throw new BadRequestException(`El campo ${field} es requerido`);
+        }
+      }
+
+      const userExists = await this.usersRepository.findByEmailAndTenant(
+        userData.email,
+        userData.tenantId,
+      );
+
+      if (userExists) {
+        throw new ConflictException('El email ya está en uso para este tenant');
+      }
+
+      const hashedPassword = hashPassword(userData.password);
+
+      const savedUser = await this.usersRepository.create({
+        ...userData,
+        password: hashedPassword,
+        isActive: true,
+      });
+
+      this.logger.debug('User created successfully:', {
+        id: savedUser._id,
+        email: savedUser.email,
+      });
+
       return savedUser;
     } catch (error) {
-      this.logger.error('Error al crear el usuario:', error.message);
-      throw new Error('Error al crear el usuario: ' + error.message);
+      this.logger.error('Error creating user:', error);
+      throw error;
     }
   }
 
-  /**
-   * Updates a user by ID and tenant ID.
-   * @param id - The ID of the user.
-   * @param updateData - The data to update the user with.
-   * @param tenantId - The tenant ID associated with the user.
-   * @returns The updated user.
-   * @throws NotFoundException if the user is not found.
-   */
+  async getAll(tenantId: string) {
+    this.logger.log(`Buscando todos los usuarios para tenantId: ${tenantId}`);
+    return this.usersRepository.getAll(tenantId); // Usa UsersRepository
+  }
+
   async update(id: string, updateData: any, tenantId: string) {
     this.logger.log(
       `Intentando actualizar usuario con id: ${id} para tenantId: ${tenantId}`,
       updateData,
     );
 
-    // Verificar si la contraseña está presente y hashearla antes de actualizar
     if (updateData.password) {
       this.logger.log('Hashing new password before updating user');
       updateData.password = hashPassword(updateData.password);
     }
 
-    const user = await this.userModel
-      .findOneAndUpdate({ _id: id, tenantId }, updateData, { new: true })
-      .exec();
+    const user = await this.usersRepository.update(id, updateData, tenantId); // Usa UsersRepository
 
     if (!user) {
       this.logger.error(`Usuario con id: ${id} no encontrado para tenantId: ${tenantId}`);
@@ -127,55 +115,34 @@ export class UsersService {
     return user;
   }
 
-  /**
-   * Deletes a user by ID and tenant ID.
-   * @param id - The ID of the user.
-   * @param tenantId - The tenant ID associated with the user.
-   * @returns A message indicating successful deletion.
-   * @throws NotFoundException if the user is not found.
-   */
   async delete(id: string, tenantId: string) {
     this.logger.log(`Intentando eliminar usuario con id: ${id} para tenantId: ${tenantId}`);
 
-    const user = await this.userModel.findOneAndDelete({ _id: id, tenantId }).exec();
-    if (!user) {
-      this.logger.error(`Usuario con id: ${id} no encontrado para tenantId: ${tenantId}`);
-      throw new NotFoundException('Usuario no encontrado para este tenant.');
+    try {
+      const user = await this.usersRepository.findById(id, tenantId);
+      if (!user) {
+        throw new NotFoundException('Usuario no encontrado para este tenant.');
+      }
+
+      await this.usersRepository.delete(id, tenantId);
+      this.logger.log(`Usuario eliminado con éxito.`);
+      return { message: 'Usuario eliminado con éxito' };
+    } catch (error) {
+      this.logger.error(`Error al eliminar usuario:`, error);
+      throw error;
     }
-    this.logger.log(`Usuario eliminado con éxito.`);
-    return { message: 'Usuario eliminado con éxito' };
   }
 
-  /**
-   * Activates or deactivates a user by ID and tenant ID.
-   * @param id - The ID of the user.
-   * @param tenantId - The tenant ID associated with the user.
-   * @param isActive - The active status to set.
-   * @returns The updated user.
-   * @throws NotFoundException if the user is not found.
-   */
   async active(id: string, tenantId: string, isActive: boolean) {
-    // Find user without checking current isActive status
-    const user = await this.userModel
-      .findOne({
-        _id: id,
-        tenantId,
-      })
-      .exec();
+    const user = await this.usersRepository.active(id, tenantId, isActive); // Usa UsersRepository
 
     if (!user) {
       throw new NotFoundException('Usuario no encontrado');
-    }
-
-    // Set new active status
-    user.isActive = isActive;
-
-    try {
-      // Save and return updated user
-      const updatedUser = await user.save();
-      return updatedUser;
-    } catch (error) {
-      throw new Error(`Error al actualizar el estado del usuario: ${error.message}`);
-    }
+    } // ELIMINADO: Ya no es necesario, el Repository guarda
+    // const updatedUser = await user.save();
+    return user; // Retorna directamente el usuario actualizado del Repository
+  }
+  catch(error) {
+    throw new Error(`Error al actualizar el estado del usuario: ${error.message}`);
   }
 }

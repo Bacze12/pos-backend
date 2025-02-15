@@ -37,6 +37,12 @@ export class User extends Document {
 
   @Prop({ default: 3 })
   maxActiveSessions: number;
+
+  @Prop()
+  firstName: string;
+
+  @Prop()
+  lastName: string;
 }
 
 const schema = SchemaFactory.createForClass(User);

@@ -7,7 +7,7 @@ export class LoginDto {
     example: 'Tech Corp',
   })
   @IsString()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'El nombre del negocio es requerido' })
   businessName: string;
 
   @ApiProperty({
@@ -15,6 +15,7 @@ export class LoginDto {
     example: 'admin@techcorp.com',
   })
   @IsEmail()
+  @IsNotEmpty()
   email: string;
 
   @ApiProperty({
@@ -23,5 +24,6 @@ export class LoginDto {
   })
   @IsString()
   @MinLength(6)
+  @IsNotEmpty()
   password: string;
 }

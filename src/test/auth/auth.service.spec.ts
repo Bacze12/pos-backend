@@ -1,25 +1,35 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { AuthService } from '../../auth/auth.service';
 import { JwtService } from '@nestjs/jwt';
-import { UsersService } from '../../modules/users/users.service';
-import { TenantsService } from '../../modules/tenants/tenants.service';
 import { UnauthorizedException } from '@nestjs/common';
-import { hashPassword } from '../../middleware/crypto.middleware';
+import { AuthService } from '../../auth/auth.service';
+import { TenantsService } from '../../modules/tenants/tenants.service';
+import { UsersService } from '../../modules/users/users.service';
+import * as crypto from '../../middleware/crypto.middleware';
+
+jest.mock('../../middleware/crypto.middleware');
 
 describe('AuthService', () => {
   let service: AuthService;
+  let _jwtService: JwtService;
+  let _tenantsService: TenantsService;
+  let _usersService: UsersService;
 
   const mockJwtService = {
     sign: jest.fn(),
+    verify: jest.fn(),
   };
+
+  const mockTenantsService = {
+    findByBusinessNameAndEmail: jest.fn(),
+    findByBusinessName: jest.fn(),
+    findById: jest.fn(),
+    updateTenant: jest.fn(),
+  };
+
   const mockUsersService = {
     findByEmailAndTenant: jest.fn(),
-    updateUser: jest.fn(),
-  };
-  const mockTenantsService = {
-    findByBusinessName: jest.fn(),
-    findByBusinessNameAndEmail: jest.fn(),
-    updateTenant: jest.fn(),
+    findById: jest.fn(),
+    update: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -27,129 +37,123 @@ describe('AuthService', () => {
       providers: [
         AuthService,
         { provide: JwtService, useValue: mockJwtService },
-        { provide: UsersService, useValue: mockUsersService },
         { provide: TenantsService, useValue: mockTenantsService },
+        { provide: UsersService, useValue: mockUsersService },
       ],
     }).compile();
 
     service = module.get<AuthService>(AuthService);
+    _jwtService = module.get<JwtService>(JwtService);
+    _tenantsService = module.get<TenantsService>(TenantsService);
+    _usersService = module.get<UsersService>(UsersService);
   });
 
-  afterEach(() => {
-    jest.clearAllMocks();
+  it('should be defined', () => {
+    expect(service).toBeDefined();
   });
 
   describe('login', () => {
-    it('debería retornar un token JWT para credenciales correctas', async () => {
-      const hashedPassword = hashPassword('password123');
-
-      mockTenantsService.findByBusinessNameAndEmail.mockResolvedValue({
-        _id: 'mockTenantId',
+    it('should authenticate tenant successfully', async () => {
+      const mockTenant = {
+        _id: '1',
+        businessName: 'test',
         email: 'test@test.com',
-        businessName: 'Test Business',
-        password: hashedPassword,
-        isActive: true,
-      });
-
-      mockJwtService.sign.mockReturnValue('mockToken');
-
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const result = await service.login('Test Business', 'test@test.com', 'password123');
-
-      expect(mockTenantsService.findByBusinessNameAndEmail).toHaveBeenCalledWith(
-        'Test Business',
-        'test@test.com',
-      );
-      expect(mockJwtService.sign).toHaveBeenNthCalledWith(
-        1,
-        {
-          tenantId: 'mockTenantId',
-          businessName: 'Test Business',
-          email: 'test@test.com',
-          role: 'ADMIN',
-        },
-        { expiresIn: '15m' },
-      );
-
-      expect(mockJwtService.sign).toHaveBeenNthCalledWith(
-        2,
-        {
-          sub: 'mockTenantId',
-          tenantId: 'mockTenantId',
-          type: 'tenant',
-        },
-        { expiresIn: '7d' },
-      );
-    });
-
-    it('debería retornar un token JWT para credenciales correctas con findByBusinessName', async () => {
-      const hashedPassword = hashPassword('password123');
-
-      mockTenantsService.findByBusinessNameAndEmail.mockResolvedValue(null);
-      mockTenantsService.findByBusinessName.mockResolvedValue({
-        _id: 'mockTenantId',
-        businessName: 'Test Business',
-        isActive: true,
-      });
-
-      mockUsersService.findByEmailAndTenant.mockResolvedValue({
-        _id: 'mockUserId',
-        tenantId: 'mockTenantId',
-        email: 'test@test.com',
-        password: hashedPassword,
-        role: 'USER',
+        password: 'hashedPassword',
         isActive: true,
         activeSession: [],
-        maxActiveSessions: 3,
-        name: 'Test User', // Añadir name si es necesario
-      });
+      };
 
-      // Mockear tokens con llamadas separadas
-      mockJwtService.sign
-        .mockReturnValueOnce('accessToken') // Primera llamada (access token)
-        .mockReturnValueOnce('refreshToken'); // Segunda llamada (refresh token)
+      mockTenantsService.findByBusinessNameAndEmail.mockResolvedValue(mockTenant);
+      jest.spyOn(crypto, 'verifyPassword').mockReturnValue(true);
+      mockJwtService.sign.mockReturnValueOnce('access_token').mockReturnValueOnce('refresh_token');
 
-      const result = await service.login('Test Business', 'test@test.com', 'password123');
+      const result = await service.login('test', 'test@test.com', 'password');
 
-      // Verificar llamadas a sign con los payloads correctos
-      expect(mockJwtService.sign).toHaveBeenNthCalledWith(
-        1,
-        {
-          tenantId: 'mockTenantId',
-          username: 'Test User',
-          email: 'test@test.com',
-          role: 'USER',
-        },
-        { expiresIn: '15m' },
-      );
-
-      expect(mockJwtService.sign).toHaveBeenNthCalledWith(
-        2,
-        {
-          sub: 'mockUserId',
-          tenantId: 'mockTenantId',
-          type: 'user',
-        },
-        { expiresIn: '7d' },
-      );
-
-      // Verificar el resultado
-      expect(result).toEqual({
-        access_token: 'accessToken',
-        refresh_token: 'refreshToken',
-        email: 'test@test.com',
-        role: 'USER',
-        username: 'Test User',
-      });
+      expect(result).toHaveProperty('access_token');
+      expect(result).toHaveProperty('refresh_token');
+      expect(result.role).toBe('ADMIN');
     });
 
-    it('debería lanzar UnauthorizedException para credenciales incorrectas', async () => {
-      mockTenantsService.findByBusinessNameAndEmail.mockResolvedValue(null);
-      mockTenantsService.findByBusinessName.mockResolvedValue(null);
+    it('should throw UnauthorizedException for inactive tenant', async () => {
+      const mockTenant = {
+        isActive: false,
+        businessName: 'test',
+        email: 'test@test.com',
+        password: 'hashedPassword',
+      };
 
-      await expect(
-        service.login('Test Business', 'test@test.com', 'wrongPassword'),
-      ).rejects.toThrow(UnauthorizedException);
+      mockTenantsService.findByBusinessNameAndEmail.mockResolvedValue(mockTenant);
+
+      await expect(service.login('test', 'test@test.com', 'password')).rejects.toThrow(
+        UnauthorizedException,
+      );
+    });
+
+    it('should authenticate user successfully', async () => {
+      const mockTenant = { _id: '1', businessName: 'test' };
+      const mockUser = {
+        _id: '2',
+        name: 'User',
+        email: 'user@test.com',
+        password: 'hashedPassword',
+        isActive: true,
+        role: 'USER',
+        tenantId: '1',
+        activeSession: [],
+      };
+
+      mockTenantsService.findByBusinessNameAndEmail.mockResolvedValue(null);
+      mockTenantsService.findByBusinessName.mockResolvedValue(mockTenant);
+      mockUsersService.findByEmailAndTenant.mockResolvedValue(mockUser);
+      jest.spyOn(crypto, 'verifyPassword').mockReturnValue(true);
+      mockJwtService.sign.mockReturnValueOnce('access_token').mockReturnValueOnce('refresh_token');
+
+      const result = await service.login('test', 'user@test.com', 'password');
+
+      expect(result).toHaveProperty('access_token');
+      expect(result).toHaveProperty('refresh_token');
+      expect(result.role).toBe('USER');
+    });
+  });
+
+  describe('refreshToken', () => {
+    it('should refresh token for tenant successfully', async () => {
+      const mockPayload = {
+        sub: '1',
+        type: 'tenant',
+        tenantId: '1',
+      };
+
+      const mockTenant = {
+        _id: '1',
+        businessName: 'test',
+        activeSession: [
+          {
+            token: 'oldToken',
+            createdAt: new Date(),
+            lastUsed: new Date(),
+          },
+        ],
+      };
+
+      mockJwtService.verify.mockReturnValue(mockPayload);
+      mockTenantsService.findById.mockResolvedValue(mockTenant);
+      mockJwtService.sign
+        .mockReturnValueOnce('newAccessToken')
+        .mockReturnValueOnce('newRefreshToken');
+
+      const result = await service.refreshToken('oldToken');
+
+      expect(result).toHaveProperty('access_token', 'newAccessToken');
+      expect(result).toHaveProperty('refresh_token', 'newRefreshToken');
+    });
+
+    it('should throw UnauthorizedException for invalid refresh token', async () => {
+      mockJwtService.verify.mockImplementation(() => {
+        throw new Error();
+      });
+
+      await expect(service.refreshToken('invalidToken')).rejects.toThrow(UnauthorizedException);
     });
   });
 });

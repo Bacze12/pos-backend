@@ -3,7 +3,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { HttpErrorFilter } from './filters/http-error.filter';
 import compression from 'compression';
-import { Logger } from '@nestjs/common';
+import { BadRequestException, Logger, ValidationPipe } from '@nestjs/common';
 import { json, urlencoded } from 'express';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import * as fs from 'fs';
@@ -22,6 +22,28 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     logger: ['log', 'error', 'warn', 'debug', 'verbose'],
   });
+
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      // Esto es importante para mostrar los mensajes de error
+      stopAtFirstError: false,
+      exceptionFactory: (errors) => {
+        const errorMessages = {};
+        errors.forEach((err) => {
+          errorMessages[err.property] = Object.values(err.constraints);
+        });
+
+        throw new BadRequestException({
+          statusCode: 400,
+          message: 'Error de validación',
+          errors: errorMessages,
+        });
+      },
+    }),
+  );
 
   app.enableCors({
     origin: [

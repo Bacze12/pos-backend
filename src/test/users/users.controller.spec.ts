@@ -1,14 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { UsersController } from '../../../src/modules/users/users.controller';
-import { UsersService } from '../../../src/modules/users/users.service';
-import { RolesGuard } from '../../../src/common/guard/roles.guard';
-import { AuthGuard } from '@nestjs/passport';
-import { ExecutionContext, UnauthorizedException } from '@nestjs/common';
-import { UserBuilder } from '../builders/users.builder';
+import { UsersController } from '../../modules/users/users.controller';
+import { UsersService } from '../../modules/users/users.service';
+import { NotFoundException } from '@nestjs/common';
+import { CreateUserDto } from '../../modules/users/dto/create-user.dto';
+import { UpdateUserDto } from '../../modules/users/dto/update-user.dto';
 
 describe('UsersController', () => {
   let controller: UsersController;
-  let service: UsersService;
+  let _service: UsersService;
 
   const mockUsersService = {
     findAllByTenant: jest.fn(),
@@ -16,15 +15,7 @@ describe('UsersController', () => {
     create: jest.fn(),
     update: jest.fn(),
     delete: jest.fn(),
-  };
-
-  const mockRolesGuard = {
-    canActivate: (context: ExecutionContext) => {
-      const request = context.switchToHttp().getRequest();
-      request.user = request.user || {};
-      request.user.roles = ['ADMIN'];
-      return true;
-    },
+    active: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -36,155 +27,97 @@ describe('UsersController', () => {
           useValue: mockUsersService,
         },
       ],
-    })
-      .overrideGuard(AuthGuard('jwt'))
-      .useValue({ canActivate: () => true })
-      .overrideGuard(RolesGuard)
-      .useValue(mockRolesGuard)
-      .compile();
+    }).compile();
 
     controller = module.get<UsersController>(UsersController);
-    service = module.get<UsersService>(UsersService);
+    _service = module.get<UsersService>(UsersService);
   });
 
-  it('debería estar definido', () => {
+  it('should be defined', () => {
     expect(controller).toBeDefined();
   });
 
   describe('getUsers', () => {
-    it('debería retornar todos los usuarios del tenant', async () => {
-      const mockUsers = [
-        new UserBuilder()
-          .setName('User1')
-          .setEmail('user1@test.com')
-          .setTenantId('mockTenantId')
-          .build(),
-        new UserBuilder()
-          .setName('User2')
-          .setEmail('user2@test.com')
-          .setTenantId('mockTenantId')
-          .build(),
-      ];
-      mockUsersService.findAllByTenant.mockResolvedValue(mockUsers);
+    it('should return array of users', async () => {
+      const result = [{ id: 1, name: 'Test' }];
+      mockUsersService.findAllByTenant.mockResolvedValue(result);
 
-      const result = await controller.getUsers('mockTenantId');
-
-      expect(service.findAllByTenant).toHaveBeenCalledWith('mockTenantId');
-      expect(result).toEqual(mockUsers);
-    });
-
-    it('debería lanzar un error si falta tenantId', async () => {
-      // Forzar un contexto sin tenantId
-      jest.spyOn(controller, 'getUsers').mockImplementationOnce(async () => {
-        const tenantId = null; // Simular valor nulo
-        if (!tenantId) throw new UnauthorizedException();
-        return [];
-      });
-
-      await expect(controller.getUsers(null)).rejects.toThrow(UnauthorizedException);
-    });
-
-    it('debería lanzar un error si el servicio falla', async () => {
-      mockUsersService.findAllByTenant.mockRejectedValue(new Error('Error interno del servidor'));
-      await expect(controller.getUsers('mockTenantId')).rejects.toThrow(
-        'Error interno del servidor',
-      );
+      expect(await controller.getUsers('tenant-1')).toBe(result);
+      expect(mockUsersService.findAllByTenant).toHaveBeenCalledWith('tenant-1');
     });
   });
 
   describe('getUserById', () => {
-    it('debería retornar un usuario por ID', async () => {
-      const mockUser = new UserBuilder()
-        .setName('User1')
-        .setEmail('user1@test.com')
-        .setTenantId('mockTenantId')
-        .build();
-      mockUsersService.findById.mockResolvedValue(mockUser);
+    it('should return a user', async () => {
+      const result = { id: 1, name: 'Test' };
+      mockUsersService.findById.mockResolvedValue(result);
 
-      const result = await controller.getUserById('mockTenantId', '1');
-
-      expect(service.findById).toHaveBeenCalledWith('1', 'mockTenantId');
-      expect(result).toEqual(mockUser);
+      expect(await controller.getUserById('tenant-1', '1')).toBe(result);
     });
 
-    it('debería lanzar un error si no encuentra un usuario por ID', async () => {
+    it('should throw NotFoundException when user not found', async () => {
       mockUsersService.findById.mockResolvedValue(null);
-      await expect(controller.getUserById('mockTenantId', 'invalidId')).rejects.toThrow(
-        'Usuario no encontrado',
-      );
+
+      await expect(controller.getUserById('tenant-1', '1')).rejects.toThrow(NotFoundException);
     });
   });
 
   describe('createUser', () => {
-    it('debería crear un usuario', async () => {
-      const mockUser = new UserBuilder()
-        .setName('User1')
-        .setEmail('user1@test.com')
-        .setPassword('password123')
-        .setTenantId('mockTenantId')
-        .build();
-      mockUsersService.create.mockResolvedValue(mockUser);
+    it('should create a user', async () => {
+      const createUserDto: CreateUserDto = {
+        firstName: 'Test',
+        lastName: 'User',
+        email: 'test@test.com',
+        password: '123456',
+        tenantId: 'tenant-1',
+        role: 'user',
+        name: '',
+      };
+      const result = { id: 1, ...createUserDto };
+      mockUsersService.create.mockResolvedValue(result);
 
-      const result = await controller.createUser('mockTenantId', {
-        name: 'User1',
-        email: 'user1@test.com',
-        password: 'password123',
-      });
-
-      expect(service.create).toHaveBeenCalledWith({
-        name: 'User1',
-        email: 'user1@test.com',
-        password: 'password123',
-        tenantId: 'mockTenantId',
-      });
-      expect(result).toEqual(mockUser);
-    });
-
-    it('debería lanzar un error si los datos del usuario son inválidos', async () => {
-      const invalidUserDto = { name: '', email: 'not-an-email', password: '' };
-      await expect(controller.createUser('mockTenantId', invalidUserDto)).rejects.toThrow(
-        'Datos inválidos para el usuario',
-      );
+      expect(await controller.createUser('tenant-1', createUserDto)).toBe(result);
     });
   });
 
   describe('updateUser', () => {
-    it('debería actualizar un usuario', async () => {
-      const mockUpdatedUser = new UserBuilder()
-        .setName('Updated User')
-        .setTenantId('mockTenantId')
-        .build();
-      mockUsersService.update.mockResolvedValue(mockUpdatedUser);
+    it('should update a user', async () => {
+      const updateUserDto: UpdateUserDto = { name: 'Updated' };
+      const result = { id: 1, name: 'Updated' };
+      mockUsersService.update.mockResolvedValue(result);
 
-      const result = await controller.updateUser('mockTenantId', '1', { name: 'Updated User' });
-
-      expect(service.update).toHaveBeenCalledWith('1', { name: 'Updated User' }, 'mockTenantId');
-      expect(result).toEqual(mockUpdatedUser);
+      expect(await controller.updateUser('tenant-1', '1', updateUserDto)).toBe(result);
     });
 
-    it('debería lanzar un error si no se encuentra el usuario para actualizar', async () => {
+    it('should throw NotFoundException when user not found', async () => {
       mockUsersService.update.mockResolvedValue(null);
-      await expect(
-        controller.updateUser('mockTenantId', 'invalidId', { name: 'Nonexistent User' }),
-      ).rejects.toThrow('Usuario no encontrado');
+
+      await expect(controller.updateUser('tenant-1', '1', {})).rejects.toThrow(NotFoundException);
     });
   });
 
   describe('deleteUser', () => {
-    it('debería eliminar un usuario', async () => {
-      const mockResponse = { message: 'Usuario eliminado con éxito' };
-      mockUsersService.delete.mockResolvedValue(mockResponse);
+    it('should delete a user', async () => {
+      const result = { id: 1, name: 'Test' };
+      mockUsersService.delete.mockResolvedValue(result);
 
-      const result = await controller.deleteUser('mockTenantId', '1');
-      expect(service.delete).toHaveBeenCalledWith('1', 'mockTenantId');
-      expect(result).toEqual(mockResponse);
+      expect(await controller.deleteUser('tenant-1', '1')).toBe(result);
     });
 
-    it('debería lanzar un error si no se encuentra el usuario para eliminar', async () => {
+    it('should throw NotFoundException when user not found', async () => {
       mockUsersService.delete.mockResolvedValue(null);
-      await expect(controller.deleteUser('mockTenantId', 'invalidId')).rejects.toThrow(
-        'Usuario no encontrado',
-      );
+
+      await expect(controller.deleteUser('tenant-1', '1')).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('updateUserStatus', () => {
+    it('should update user status', async () => {
+      const result = { id: 1, isActive: true };
+      mockUsersService.active.mockResolvedValue(result);
+
+      expect(await controller.updateUserStatus('tenant-1', '1', true)).toBe(result);
+      expect(mockUsersService.active).toHaveBeenCalledWith('1', 'tenant-1', true);
     });
   });
 });

@@ -7,14 +7,17 @@ import {
   Body,
   UseGuards,
   NotFoundException,
-  BadRequestException,
   Patch,
+  Logger,
+  HttpStatus,
+  HttpCode,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { UsersService } from './users.service';
 import { RolesGuard } from '../../common/guard/roles.guard';
 import { Roles } from '../../common/decorator/roles.decorator';
-import { CreateUserDto, UpdateUserDto } from './user.dto';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags, ApiBody } from '@nestjs/swagger';
 import { TenantId } from '../../common/decorator/tenant-id.decorator';
 
@@ -23,17 +26,21 @@ import { TenantId } from '../../common/decorator/tenant-id.decorator';
 @Controller('users')
 @UseGuards(AuthGuard('jwt'), RolesGuard)
 export class UsersController {
+  private readonly logger = new Logger(UsersController.name);
+
   constructor(private readonly usersService: UsersService) {}
 
   @Get()
+  @HttpCode(HttpStatus.OK)
   @Roles('ADMIN', 'MANAGER')
   @ApiOperation({
     summary: 'Obtener todos los usuarios',
     description: 'Devuelve todos los usuarios asociados al tenant actual.',
   })
   @ApiResponse({ status: 200, description: 'Usuarios recuperados con éxito.' })
-  @ApiResponse({ status: 401, description: 'No autorizado. Falta token JWT o es inválido.' })
+  @ApiResponse({ status: 401, description: 'No autorizado.' })
   async getUsers(@TenantId() tenantId: string) {
+    this.logger.log(`Obteniendo usuarios para tenant: ${tenantId}`);
     return this.usersService.findAllByTenant(tenantId);
   }
 
@@ -55,6 +62,7 @@ export class UsersController {
   }
 
   @Post()
+  @HttpCode(HttpStatus.CREATED)
   @Roles('ADMIN')
   @ApiOperation({
     summary: 'Crear un nuevo usuario',
@@ -63,14 +71,16 @@ export class UsersController {
   @ApiResponse({ status: 201, description: 'Usuario creado con éxito.' })
   @ApiResponse({ status: 400, description: 'Datos de entrada inválidos.' })
   async createUser(@TenantId() tenantId: string, @Body() userData: CreateUserDto) {
-    if (!userData.name || !userData.email || !userData.password) {
-      throw new BadRequestException('Datos inválidos para el usuario');
+    this.logger.log(`Creando usuario para tenant: ${tenantId}`);
+    try {
+      return await this.usersService.create({
+        ...userData,
+        tenantId,
+      });
+    } catch (error) {
+      this.logger.error('Error creating user:', error);
+      throw error;
     }
-
-    return this.usersService.create({
-      ...userData,
-      tenantId,
-    });
   }
 
   @Patch(':id')
