@@ -1,7 +1,7 @@
 import { Controller, Post, Put, Delete, Body, Param, UseGuards, Patch } from '@nestjs/common';
 import { ShiftService } from './shift.service';
 import { AuthGuard } from '@nestjs/passport';
-import { CreateShiftDto, CloseShiftDto } from './shift.dto';
+import { CreateShiftDto, CloseShiftDto } from './dto/shift.dto';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { TenantId } from '../../common/decorator/tenant-id.decorator';
 import { UserEmail } from '../../common/decorator/user-email.decorator';

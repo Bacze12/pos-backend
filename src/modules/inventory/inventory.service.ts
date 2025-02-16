@@ -1,22 +1,21 @@
 import { Injectable } from '@nestjs/common';
-import { CreateInventoryDto } from './dto/inventory.dto';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { Inventory, InventoryDocument, InventoryMovementType } from './inventory.schema';
-import { Product, ProductDocument } from '../products/products.schema';
+import { Inventory, InventoryMovementType } from './inventory.schema';
+import { InventoryRepository } from './repository/inventory.repository';
 
 @Injectable()
 export class InventoryService {
-  constructor(
-    @InjectModel(Inventory.name) private inventoryModel: Model<InventoryDocument>,
-    @InjectModel(Product.name) private productModel: Model<ProductDocument>,
-  ) {}
+  constructor(private readonly inventoryRepository: InventoryRepository) {}
 
-  async create(createInventoryDto: CreateInventoryDto): Promise<Inventory> {
-    const { productId, quantity, type, userId: _userId } = createInventoryDto;
+  async create(inventoryData: {
+    productId: string;
+    quantity: number;
+    type: InventoryMovementType;
+    userId: string;
+  }): Promise<Inventory> {
+    const { productId, quantity, type, userId } = inventoryData;
 
     // 1️⃣ Verificar que el producto existe
-    const product = await this.productModel.findById(productId);
+    const product = await this.inventoryRepository.findProductById(productId);
     if (!product) {
       throw new Error('Producto no encontrado');
     }
@@ -27,23 +26,27 @@ export class InventoryService {
     }
 
     // 3️⃣ Registrar el movimiento de inventario
-    const newInventory = new this.inventoryModel(createInventoryDto);
-    await newInventory.save();
+    const newInventory = this.inventoryRepository.createInventoryDocument({
+      productId,
+      quantity,
+      type,
+      userId,
+    });
+    await this.inventoryRepository.saveInventoryMovement(newInventory);
 
     // 4️⃣ Actualizar el stock del producto
     const newStock =
       type === InventoryMovementType.IN ? product.stock + quantity : product.stock - quantity;
-
-    await this.productModel.findByIdAndUpdate(productId, { stock: newStock });
+    await this.inventoryRepository.updateProductStock(productId, newStock);
 
     return newInventory;
   }
 
   async findAll(): Promise<Inventory[]> {
-    return this.inventoryModel.find().populate('productId').populate('userId').exec();
+    return this.inventoryRepository.findAllInventory();
   }
 
   async findById(id: string): Promise<Inventory | null> {
-    return this.inventoryModel.findById(id).populate('productId').populate('userId').exec();
+    return this.inventoryRepository.findInventoryById(id);
   }
 }

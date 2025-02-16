@@ -27,9 +27,9 @@ export class PriceCalculator {
     if (hasExtraTax && extraTaxRate) finalPrice *= 1 + extraTaxRate / 100;
 
     return {
-      sellingPrice: Number(sellingPrice.toFixed(2)),
-      minSellingPrice: Number(minSellingPrice.toFixed(2)),
-      finalPrice: Number(finalPrice.toFixed(2)),
+      sellingPrice: Number(sellingPrice.toFixed()),
+      minSellingPrice: Number(minSellingPrice.toFixed()),
+      finalPrice: Number(finalPrice.toFixed()),
     };
   }
 }

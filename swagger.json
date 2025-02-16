@@ -185,7 +185,7 @@
             "description": "Usuarios recuperados con éxito."
           },
           "401": {
-            "description": "No autorizado. Falta token JWT o es inválido."
+            "description": "No autorizado."
           }
         },
         "security": [
@@ -1276,12 +1276,30 @@
             "type": "string",
             "description": "ID del tenant",
             "example": "63f1b23c9a7d2e1234abcd56"
+          },
+          "firstName": {
+            "type": "string",
+            "description": "Nombre del usuario",
+            "example": "Juan"
+          },
+          "lastName": {
+            "type": "string",
+            "description": "Apellido del usuario",
+            "example": "Pérez"
+          },
+          "role": {
+            "type": "string",
+            "description": "Rol del usuario",
+            "example": "admin"
           }
         },
         "required": [
           "name",
           "email",
-          "password"
+          "password",
+          "firstName",
+          "lastName",
+          "role"
         ]
       },
       "UpdateUserDto": {
@@ -1311,10 +1329,28 @@
             "type": "string",
             "description": "Nombre de la categoría",
             "example": "Electrónica"
+          },
+          "description": {
+            "type": "string",
+            "description": "Descripción de la categoría",
+            "example": "Productos electrónicos"
+          },
+          "tenantId": {
+            "type": "string",
+            "description": "ID del tenant",
+            "example": "63f1b23c9a7d2e1234abcd56"
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "Activa",
+            "example": true
           }
         },
         "required": [
-          "name"
+          "name",
+          "description",
+          "tenantId",
+          "isActive"
         ]
       },
       "UpdateCategoryDto": {
@@ -1324,26 +1360,68 @@
             "type": "string",
             "description": "Nombre actualizado de la categoría",
             "example": "Ropa"
+          },
+          "description": {
+            "type": "string",
+            "description": "Descripción actualizada de la categoría",
+            "example": "Ropa de moda"
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "Activa",
+            "example": true
           }
         }
       },
       "CreateSupplierDto": {
         "type": "object",
         "properties": {
+          "tenantId": {
+            "type": "string",
+            "description": "ID del tenant al que pertenece el proveedor",
+            "example": "507f1f77bcf86cd799439011"
+          },
           "name": {
             "type": "string",
             "description": "Nombre del proveedor",
-            "example": "Proveedor ABC"
+            "example": "Distribuidora XYZ"
           },
-          "contactInfo": {
+          "email": {
             "type": "string",
-            "description": "Información de contacto del proveedor",
-            "example": "contacto@proveedorabc.com"
+            "description": "Correo electrónico del proveedor",
+            "example": "contacto@distribuidoraxyz.com"
+          },
+          "phone": {
+            "type": "string",
+            "description": "Teléfono del proveedor",
+            "example": "+34 612345678"
+          },
+          "address": {
+            "type": "string",
+            "description": "Dirección del proveedor",
+            "example": "Calle Principal 123, Ciudad"
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "Estado del proveedor",
+            "example": true,
+            "default": true
+          },
+          "products": {
+            "description": "IDs de los productos asociados",
+            "example": [
+              "507f1f77bcf86cd799439011"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "required": [
+          "tenantId",
           "name",
-          "contactInfo"
+          "email"
         ]
       },
       "UpdateSupplierDto": {
@@ -1352,12 +1430,37 @@
           "name": {
             "type": "string",
             "description": "Nombre del proveedor",
-            "example": "Proveedor XYZ"
+            "example": "Distribuidora XYZ"
           },
-          "contactInfo": {
+          "email": {
             "type": "string",
-            "description": "Información de contacto del proveedor",
-            "example": "contacto@proveedorxyz.com"
+            "description": "Correo electrónico del proveedor",
+            "example": "contacto@distribuidoraxyz.com"
+          },
+          "phone": {
+            "type": "string",
+            "description": "Teléfono del proveedor",
+            "example": "+34 612345678"
+          },
+          "address": {
+            "type": "string",
+            "description": "Dirección del proveedor",
+            "example": "Calle Principal 123, Ciudad"
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "Estado del proveedor",
+            "example": true
+          },
+          "products": {
+            "description": "IDs de los productos asociados",
+            "example": [
+              "507f1f77bcf86cd799439011"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         }
       },

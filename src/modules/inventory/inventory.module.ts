@@ -4,6 +4,7 @@ import { InventoryService } from './inventory.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Inventory, InventorySchema } from './inventory.schema';
 import { ProductsModule } from '../products/products.module';
+import { InventoryRepository } from './repository/inventory.repository';
 
 @Module({
   imports: [
@@ -11,6 +12,6 @@ import { ProductsModule } from '../products/products.module';
     ProductsModule,
   ],
   controllers: [InventoryController],
-  providers: [InventoryService],
+  providers: [InventoryService, InventoryRepository],
 })
 export class InventoryModule {}

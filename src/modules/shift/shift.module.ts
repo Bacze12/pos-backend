@@ -6,6 +6,7 @@ import { ShiftService } from './shift.service';
 import { UsersModule } from '../users/user.module';
 import { Sale, SaleSchema } from '../sales/sales.schema';
 import { User, UserSchema } from '../users/users.schema';
+import { ShiftRepository } from './repositories/shift.repository';
 
 @Module({
   imports: [
@@ -17,7 +18,7 @@ import { User, UserSchema } from '../users/users.schema';
     UsersModule,
   ],
   controllers: [ShiftsController],
-  providers: [ShiftService],
+  providers: [ShiftService, ShiftRepository],
   exports: [ShiftService, MongooseModule],
 })
 export class ShiftModule {}

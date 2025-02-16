@@ -2,22 +2,36 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Inventory, InventoryDocument } from '../inventory.schema';
-import { CreateInventoryDto } from '../dto/inventory.dto';
+import { Product, ProductDocument } from '../../products/products.schema';
 
 @Injectable()
 export class InventoryRepository {
-  constructor(@InjectModel(Inventory.name) private inventoryModel: Model<InventoryDocument>) {}
+  constructor(
+    @InjectModel(Inventory.name) private inventoryModel: Model<InventoryDocument>,
+    @InjectModel(Product.name) private productModel: Model<ProductDocument>,
+  ) {}
 
-  async create(createInventoryDto: CreateInventoryDto): Promise<Inventory> {
-    const newInventory = new this.inventoryModel(createInventoryDto);
-    return newInventory.save();
+  async findProductById(productId: string): Promise<Product | null> {
+    return this.productModel.findById(productId);
   }
 
-  async findAll(): Promise<Inventory[]> {
-    return this.inventoryModel.find().populate('productId').exec();
+  async updateProductStock(productId: string, newStock: number): Promise<void> {
+    await this.productModel.findByIdAndUpdate(productId, { stock: newStock });
   }
 
-  async findById(id: string): Promise<Inventory | null> {
-    return this.inventoryModel.findById(id).populate('productId').exec();
+  async saveInventoryMovement(inventory: InventoryDocument): Promise<Inventory> {
+    return inventory.save();
+  }
+
+  async findAllInventory(): Promise<Inventory[]> {
+    return this.inventoryModel.find().populate('productId').populate('userId').exec();
+  }
+
+  async findInventoryById(id: string): Promise<Inventory | null> {
+    return this.inventoryModel.findById(id).populate('productId').populate('userId').exec();
+  }
+
+  createInventoryDocument(data: any): InventoryDocument {
+    return new this.inventoryModel(data);
   }
 }

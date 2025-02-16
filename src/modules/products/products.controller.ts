@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { AuthGuard } from '@nestjs/passport';
-import { CreateProductDto } from './products.dto';
+import { CreateProductDto } from './dto/products.dto';
 import { ApiBearerAuth, ApiTags, ApiResponse, ApiOperation } from '@nestjs/swagger';
 import { TenantId } from '../../common/decorator/tenant-id.decorator';
 

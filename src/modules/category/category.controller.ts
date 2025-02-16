@@ -11,7 +11,8 @@ import {
 } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { AuthGuard } from '@nestjs/passport';
-import { CreateCategoryDto, UpdateCategoryDto } from './category.dto';
+import { CreateCategoryDto } from './dto/create-category.dto';
+import { UpdateCategoryDto } from './dto/update-category.dto';
 import { ApiBearerAuth, ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { TenantId } from '../../common/decorator/tenant-id.decorator';
 
