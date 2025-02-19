@@ -56,7 +56,6 @@ describe('SuppliersController', () => {
         phone: '1234567890',
         address: 'Test Address',
         products: [],
-        tenantId: tenantId,
       };
       const createdSupplier = { id: '1', ...supplierData };
       mockSupplierService.create.mockResolvedValue(createdSupplier);

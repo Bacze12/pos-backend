@@ -62,7 +62,6 @@ describe('SupplierService', () => {
   describe('create', () => {
     it('should create and return a supplier', async () => {
       const createDto: CreateSupplierDto = {
-        tenantId: 'tenant1',
         name: 'New Supplier',
         email: 'supplier@test.com',
         isActive: true,
@@ -75,10 +74,7 @@ describe('SupplierService', () => {
       mockSupplierRepository.create.mockResolvedValue(result);
 
       expect(await service.create('tenant1', createDto)).toBe(result);
-      expect(mockSupplierRepository.create).toHaveBeenCalledWith('tenant1', {
-        ...createDto,
-        tenantId: 'tenant1',
-      });
+      expect(mockSupplierRepository.create).toHaveBeenCalledWith('tenant1', createDto);
     });
 
     it('should throw BadRequestException if required fields are missing', async () => {
