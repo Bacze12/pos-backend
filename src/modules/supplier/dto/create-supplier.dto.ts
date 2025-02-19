@@ -4,14 +4,6 @@ import { Types } from 'mongoose';
 
 export class CreateSupplierDto {
   @ApiProperty({
-    description: 'ID del tenant al que pertenece el proveedor',
-    example: '507f1f77bcf86cd799439011',
-  })
-  @IsString()
-  @IsNotEmpty()
-  tenantId: string;
-
-  @ApiProperty({
     description: 'Nombre del proveedor',
     example: 'Distribuidora XYZ',
   })
