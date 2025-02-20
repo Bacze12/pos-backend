@@ -46,7 +46,6 @@ export class CategoriesController {
 
     return this.categoryService.create({
       ...createCategoryDto,
-      tenantId,
     });
   }
 
