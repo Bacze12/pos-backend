@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Category } from '../category.schema';
-import { CreateCategoryDto } from '../dto/create-category.dto';
 import { UpdateCategoryDto } from '../dto/update-category.dto';
 
 @Injectable()
@@ -17,8 +16,8 @@ export class CategoryRepository {
     return this.categoryModel.findOne({ _id: id, tenantId, isActive: true }).exec();
   }
 
-  async create(createCategoryDto: CreateCategoryDto): Promise<Category> {
-    const category = new this.categoryModel(createCategoryDto);
+  async create(tenantId: string, categoryData: Partial<Category>): Promise<Category> {
+    const category = new this.categoryModel({ ...categoryData, tenantId });
     return category.save();
   }
 

@@ -36,50 +36,53 @@ describe('CategoriesController', () => {
   });
 
   describe('findAll', () => {
-    it('should return array of categories', async () => {
-      const result = ['test'];
-      jest.spyOn(service, 'findAll').mockResolvedValue(result as any);
+    it('should return all categories for a tenant', async () => {
+      const categories = [{ id: '1', name: 'Test Category' }];
+      mockCategoryService.findAll.mockResolvedValue(categories);
 
-      expect(await controller.findAll('tenant-1')).toBe(result);
+      const result = await controller.findAll('tenant-1');
+      expect(result).toEqual(categories);
       expect(service.findAll).toHaveBeenCalledWith('tenant-1');
     });
   });
 
   describe('create', () => {
     it('should create a category', async () => {
-      const createCategoryDto: CreateCategoryDto = { name: 'Test Category' };
-      const result = { id: '1', ...createCategoryDto };
+      const createDto: CreateCategoryDto = { name: 'New Category' };
+      const created = { id: '1', ...createDto };
+      mockCategoryService.create.mockResolvedValue(created);
 
-      jest.spyOn(service, 'create').mockResolvedValue(result as any);
-
-      expect(await controller.create('tenant-1', createCategoryDto)).toBe(result);
+      const result = await controller.create('tenant-1', createDto);
+      expect(result).toEqual(created);
+      expect(service.create).toHaveBeenCalledWith('tenant-1', createDto);
     });
 
     it('should throw BadRequestException if tenantId is not provided', async () => {
-      const createCategoryDto: CreateCategoryDto = { name: 'Test Category' };
+      const createDto: CreateCategoryDto = { name: 'New Category' };
 
-      await expect(controller.create('', createCategoryDto)).rejects.toThrow(BadRequestException);
+      await expect(controller.create('', createDto)).rejects.toThrow(BadRequestException);
     });
   });
 
   describe('update', () => {
     it('should update a category', async () => {
-      const updateCategoryDto: UpdateCategoryDto = { name: 'Updated Category' };
-      const result = { id: '1', ...updateCategoryDto };
+      const updateDto: UpdateCategoryDto = { name: 'Updated Category' };
+      const updated = { id: '1', ...updateDto };
+      mockCategoryService.update.mockResolvedValue(updated);
 
-      jest.spyOn(service, 'update').mockResolvedValue(result as any);
-
-      expect(await controller.update('tenant-1', '1', updateCategoryDto)).toBe(result);
-      expect(service.update).toHaveBeenCalledWith('1', updateCategoryDto, 'tenant-1');
+      const result = await controller.update('tenant-1', '1', updateDto);
+      expect(result).toEqual(updated);
+      expect(service.update).toHaveBeenCalledWith('1', updateDto, 'tenant-1');
     });
   });
 
   describe('remove', () => {
     it('should remove a category', async () => {
-      const result = { id: '1', name: 'Deleted Category' };
-      jest.spyOn(service, 'remove').mockResolvedValue(result as any);
+      const deleted = { id: '1', name: 'Deleted Category' };
+      mockCategoryService.remove.mockResolvedValue(deleted);
 
-      expect(await controller.remove('tenant-1', '1')).toBe(result);
+      const result = await controller.remove('tenant-1', '1');
+      expect(result).toEqual(deleted);
       expect(service.remove).toHaveBeenCalledWith('1', 'tenant-1');
     });
   });

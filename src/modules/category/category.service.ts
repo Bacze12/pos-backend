@@ -20,8 +20,8 @@ export class CategoryService {
     return category;
   }
 
-  async create(createCategoryDto: CreateCategoryDto): Promise<Category> {
-    return this.categoryRepository.create(createCategoryDto);
+  async create(tenantId: string, createCategoryDto: CreateCategoryDto): Promise<Category> {
+    return this.categoryRepository.create(tenantId, createCategoryDto);
   }
 
   async update(

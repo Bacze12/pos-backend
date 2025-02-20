@@ -39,14 +39,11 @@ export class CategoriesController {
     description: 'Crea una categoría para el tenant actual',
   })
   @ApiResponse({ status: 201, description: 'Categoría creada con éxito.' })
-  async create(@TenantId() tenantId: string, @Body() createCategoryDto: CreateCategoryDto) {
+  async create(@TenantId() tenantId: string, @Body() categoryData: CreateCategoryDto) {
     if (!tenantId) {
-      throw new BadRequestException('TenantId es requerido');
+      throw new BadRequestException('Tenant ID is required');
     }
-
-    return this.categoryService.create({
-      ...createCategoryDto,
-    });
+    return this.categoryService.create(tenantId, categoryData);
   }
 
   @Patch(':id')

@@ -2,12 +2,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { CategoryService } from '../../modules/category/category.service';
 import { CategoryRepository } from '../../modules/category/repositories/category.repository';
 import { NotFoundException } from '@nestjs/common';
-import { CreateCategoryDto } from '../../modules/category/dto/create-category.dto';
-import { UpdateCategoryDto } from '../../modules/category/dto/update-category.dto';
 
 describe('CategoryService', () => {
   let service: CategoryService;
-  let repository: CategoryRepository;
+  let _repository: CategoryRepository;
 
   const mockCategoryRepository = {
     findAll: jest.fn(),
@@ -29,69 +27,82 @@ describe('CategoryService', () => {
     }).compile();
 
     service = module.get<CategoryService>(CategoryService);
-    repository = module.get<CategoryRepository>(CategoryRepository);
+    _repository = module.get<CategoryRepository>(CategoryRepository);
   });
 
-  it('should be defined', () => {
-    expect(service).toBeDefined();
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   describe('findAll', () => {
     it('should return an array of categories', async () => {
-      const result = ['test'];
-      jest.spyOn(repository, 'findAll').mockResolvedValue(result as any);
-      expect(await service.findAll('tenant-1')).toBe(result);
+      const mockCategories = [{ id: '1', name: 'Test' }];
+      mockCategoryRepository.findAll.mockResolvedValue(mockCategories);
+
+      expect(await service.findAll('tenant1')).toBe(mockCategories);
+      expect(mockCategoryRepository.findAll).toHaveBeenCalledWith('tenant1');
     });
   });
 
   describe('findById', () => {
-    it('should return a category', async () => {
-      const result = { id: '1', name: 'test' };
-      jest.spyOn(repository, 'findById').mockResolvedValue(result as any);
-      expect(await service.findById('1', 'tenant-1')).toBe(result);
+    it('should return a category if found', async () => {
+      const mockCategory = { id: '1', name: 'Test' };
+      mockCategoryRepository.findById.mockResolvedValue(mockCategory);
+
+      expect(await service.findById('1', 'tenant1')).toBe(mockCategory);
+      expect(mockCategoryRepository.findById).toHaveBeenCalledWith('1', 'tenant1');
     });
 
-    it('should throw NotFoundException when category not found', async () => {
-      jest.spyOn(repository, 'findById').mockResolvedValue(null);
-      await expect(service.findById('1', 'tenant-1')).rejects.toThrow(NotFoundException);
+    it('should throw NotFoundException if category not found', async () => {
+      mockCategoryRepository.findById.mockResolvedValue(null);
+
+      await expect(service.findById('1', 'tenant1')).rejects.toThrow(NotFoundException);
     });
   });
 
   describe('create', () => {
-    it('should create a category', async () => {
-      const createDto: CreateCategoryDto = { name: 'test' };
-      const result = { id: '1', name: 'test', tenantId: 'tenant-1' };
-      jest.spyOn(repository, 'create').mockResolvedValue(result as any);
-      expect(await service.create(createDto)).toBe(result);
+    it('should create and return a category', async () => {
+      const createCategoryDto = { name: 'Test Category' };
+      const mockCategory = { id: '1', ...createCategoryDto };
+      mockCategoryRepository.create.mockResolvedValue(mockCategory);
+
+      expect(await service.create('tenant1', createCategoryDto)).toBe(mockCategory);
+      expect(mockCategoryRepository.create).toHaveBeenCalledWith('tenant1', createCategoryDto);
     });
   });
 
   describe('update', () => {
-    it('should update a category', async () => {
-      const updateDto: UpdateCategoryDto = { name: 'updated' };
-      const result = { id: '1', ...updateDto };
-      jest.spyOn(repository, 'update').mockResolvedValue(result as any);
-      expect(await service.update('1', updateDto, 'tenant-1')).toBe(result);
+    it('should update and return a category if found', async () => {
+      const updateCategoryDto = { name: 'Updated Category' };
+      const mockCategory = { id: '1', ...updateCategoryDto };
+      mockCategoryRepository.update.mockResolvedValue(mockCategory);
+
+      expect(await service.update('1', updateCategoryDto, 'tenant1')).toBe(mockCategory);
+      expect(mockCategoryRepository.update).toHaveBeenCalledWith('1', updateCategoryDto, 'tenant1');
     });
 
-    it('should throw NotFoundException when category not found', async () => {
-      jest.spyOn(repository, 'update').mockResolvedValue(null);
-      await expect(service.update('1', { name: 'test' }, 'tenant-1')).rejects.toThrow(
+    it('should throw NotFoundException if category not found', async () => {
+      mockCategoryRepository.update.mockResolvedValue(null);
+
+      await expect(service.update('1', { name: 'Test' }, 'tenant1')).rejects.toThrow(
         NotFoundException,
       );
     });
   });
 
   describe('remove', () => {
-    it('should remove a category', async () => {
-      const result = { id: '1', name: 'test' };
-      jest.spyOn(repository, 'softDelete').mockResolvedValue(result as any);
-      expect(await service.remove('1', 'tenant-1')).toBe(result);
+    it('should remove and return a category if found', async () => {
+      const mockCategory = { id: '1', name: 'Test' };
+      mockCategoryRepository.softDelete.mockResolvedValue(mockCategory);
+
+      expect(await service.remove('1', 'tenant1')).toBe(mockCategory);
+      expect(mockCategoryRepository.softDelete).toHaveBeenCalledWith('1', 'tenant1');
     });
 
-    it('should throw NotFoundException when category not found', async () => {
-      jest.spyOn(repository, 'softDelete').mockResolvedValue(null);
-      await expect(service.remove('1', 'tenant-1')).rejects.toThrow(NotFoundException);
+    it('should throw NotFoundException if category not found', async () => {
+      mockCategoryRepository.softDelete.mockResolvedValue(null);
+
+      await expect(service.remove('1', 'tenant1')).rejects.toThrow(NotFoundException);
     });
   });
 });
