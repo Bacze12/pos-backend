@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsEmail, IsOptional, IsBoolean, IsArray } from 'class-validator';
+import { IsString, IsEmail, IsOptional, IsBoolean, IsArray, IsDate } from 'class-validator';
 import { Types } from 'mongoose';
 
 export class UpdateSupplierDto {
@@ -58,4 +58,22 @@ export class UpdateSupplierDto {
   @IsArray()
   @IsOptional()
   products?: Types.ObjectId[];
+
+  @ApiProperty({
+    description: 'Fecha de creación',
+    example: '2023-01-01T00:00:00Z',
+    required: false,
+  })
+  @IsDate()
+  @IsOptional()
+  createdAt?: Date;
+
+  @ApiProperty({
+    description: 'Fecha de actualización',
+    example: '2023-01-01T00:00:00Z',
+    required: false,
+  })
+  @IsDate()
+  @IsOptional()
+  updatedAt?: Date;
 }
