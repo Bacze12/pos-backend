@@ -15,19 +15,11 @@ export class CreateCategoryDto {
     example: 'Productos electrónicos',
   })
   @IsString()
-  description: string;
-
-  @ApiProperty({
-    description: 'ID del tenant',
-    example: '63f1b23c9a7d2e1234abcd56',
-  })
-  @IsString()
-  @IsNotEmpty()
-  tenantId: string;
+  description?: string;
 
   @ApiProperty({
     description: 'Activa',
     example: true,
   })
-  isActive: boolean;
+  isActive?: boolean;
 }
