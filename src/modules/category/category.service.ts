@@ -25,13 +25,17 @@ export class CategoryService {
   }
 
   async update(
-    id: string,
-    updateCategoryDto: UpdateCategoryDto,
     tenantId: string,
+    categoryId: string,
+    updateCategoryDto: UpdateCategoryDto,
   ): Promise<Category> {
-    const updatedCategory = await this.categoryRepository.update(id, updateCategoryDto, tenantId);
+    const updatedCategory = await this.categoryRepository.update(
+      tenantId,
+      categoryId,
+      updateCategoryDto,
+    );
     if (!updatedCategory) {
-      throw new NotFoundException(`Category with ID ${id} not found`);
+      throw new NotFoundException(`Category with ID ${categoryId} not found`);
     }
     return updatedCategory;
   }

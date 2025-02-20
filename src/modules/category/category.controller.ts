@@ -46,7 +46,7 @@ export class CategoriesController {
     return this.categoryService.create(tenantId, categoryData);
   }
 
-  @Patch(':id')
+  @Patch(':categoryId')
   @ApiOperation({
     summary: 'Actualizar categoría',
     description: 'Actualiza una categoría del tenant actual',
@@ -54,10 +54,10 @@ export class CategoriesController {
   @ApiResponse({ status: 200, description: 'Categoría actualizada con éxito.' })
   async update(
     @TenantId() tenantId: string,
-    @Param('id') id: string,
-    @Body() updateCategoryDto: UpdateCategoryDto,
+    @Param('categoryId') categoryId: string,
+    @Body() updateData: UpdateCategoryDto,
   ) {
-    return this.categoryService.update(id, updateCategoryDto, tenantId);
+    return this.categoryService.update(tenantId, categoryId, updateData);
   }
 
   @Delete(':id')

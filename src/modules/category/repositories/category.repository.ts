@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Category } from '../category.schema';
-import { UpdateCategoryDto } from '../dto/update-category.dto';
 
 @Injectable()
 export class CategoryRepository {
@@ -22,16 +21,12 @@ export class CategoryRepository {
   }
 
   async update(
-    id: string,
-    updateCategoryDto: UpdateCategoryDto,
+    categoriesId: string,
     tenantId: string,
+    updateData: Partial<Category>,
   ): Promise<Category> {
     return this.categoryModel
-      .findOneAndUpdate(
-        { _id: id, tenantId, isActive: true },
-        { $set: updateCategoryDto },
-        { new: true },
-      )
+      .findOneAndUpdate({ _id: categoriesId, tenantId }, { $set: updateData }, { new: true })
       .exec();
   }
 
