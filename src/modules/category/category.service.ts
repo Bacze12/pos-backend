@@ -12,10 +12,10 @@ export class CategoryService {
     return this.categoryRepository.findAll(tenantId);
   }
 
-  async findById(id: string, tenantId: string): Promise<Category> {
-    const category = await this.categoryRepository.findById(id, tenantId);
+  async findById(tenantId: string, categoriesId: string): Promise<Category> {
+    const category = await this.categoryRepository.findById(tenantId, categoriesId);
     if (!category) {
-      throw new NotFoundException(`Category with ID ${id} not found`);
+      throw new NotFoundException(`Category with ID ${categoriesId} not found`);
     }
     return category;
   }
@@ -26,25 +26,24 @@ export class CategoryService {
 
   async update(
     tenantId: string,
-    categoryId: string,
+    categoriesId: string,
     updateCategoryDto: UpdateCategoryDto,
   ): Promise<Category> {
     const updatedCategory = await this.categoryRepository.update(
       tenantId,
-      categoryId,
+      categoriesId,
       updateCategoryDto,
     );
     if (!updatedCategory) {
-      throw new NotFoundException(`Category with ID ${categoryId} not found`);
+      throw new NotFoundException(`Category with ID ${categoriesId} not found`);
     }
     return updatedCategory;
   }
 
-  async remove(id: string, tenantId: string): Promise<Category> {
-    const deletedCategory = await this.categoryRepository.softDelete(id, tenantId);
-    if (!deletedCategory) {
-      throw new NotFoundException(`Category with ID ${id} not found`);
+  async delete(tenantId: string, categoriesId: string): Promise<void> {
+    const deleted = await this.categoryRepository.delete(tenantId, categoriesId);
+    if (!deleted) {
+      throw new NotFoundException(`Category with ID ${categoriesId} not found`);
     }
-    return deletedCategory;
   }
 }

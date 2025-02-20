@@ -8,21 +8,24 @@ export class CategoryRepository {
   constructor(@InjectModel(Category.name) private readonly categoryModel: Model<Category>) {}
 
   async findAll(tenantId: string): Promise<Category[]> {
-    return this.categoryModel.find({ tenantId, isActive: true }).exec();
+    return this.categoryModel.find({ tenantId }).exec();
   }
 
-  async findById(id: string, tenantId: string): Promise<Category> {
-    return this.categoryModel.findOne({ _id: id, tenantId, isActive: true }).exec();
+  async findById(tenantId: string, categoriesId: string): Promise<Category> {
+    return this.categoryModel.findOne({ _id: categoriesId, tenantId, isActive: true }).exec();
   }
 
   async create(tenantId: string, categoryData: Partial<Category>): Promise<Category> {
-    const category = new this.categoryModel({ ...categoryData, tenantId });
+    const category = new this.categoryModel({
+      ...categoryData,
+      tenantId,
+    });
     return category.save();
   }
 
   async update(
-    categoriesId: string,
     tenantId: string,
+    categoriesId: string,
     updateData: Partial<Category>,
   ): Promise<Category> {
     return this.categoryModel
@@ -30,13 +33,8 @@ export class CategoryRepository {
       .exec();
   }
 
-  async softDelete(id: string, tenantId: string): Promise<Category> {
-    return this.categoryModel
-      .findOneAndUpdate(
-        { _id: id, tenantId, isActive: true },
-        { $set: { isActive: false } },
-        { new: true },
-      )
-      .exec();
+  async delete(tenantId: string, categoriesId: string): Promise<boolean> {
+    const result = await this.categoryModel.deleteOne({ _id: categoriesId, tenantId }).exec();
+    return result.deletedCount > 0;
   }
 }

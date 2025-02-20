@@ -1,14 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Param,
-  Patch,
-  Delete,
-  UseGuards,
-  BadRequestException,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch, Delete, UseGuards } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { AuthGuard } from '@nestjs/passport';
 import { CreateCategoryDto } from './dto/create-category.dto';
@@ -39,34 +29,34 @@ export class CategoriesController {
     description: 'Crea una categoría para el tenant actual',
   })
   @ApiResponse({ status: 201, description: 'Categoría creada con éxito.' })
-  async create(@TenantId() tenantId: string, @Body() categoryData: CreateCategoryDto) {
-    if (!tenantId) {
-      throw new BadRequestException('Tenant ID is required');
-    }
+  async createCategories(@TenantId() tenantId: string, @Body() categoryData: CreateCategoryDto) {
     return this.categoryService.create(tenantId, categoryData);
   }
 
-  @Patch(':categoryId')
+  @Patch(':categoriesId')
   @ApiOperation({
     summary: 'Actualizar categoría',
     description: 'Actualiza una categoría del tenant actual',
   })
   @ApiResponse({ status: 200, description: 'Categoría actualizada con éxito.' })
-  async update(
+  async updateCategories(
     @TenantId() tenantId: string,
-    @Param('categoryId') categoryId: string,
+    @Param('categoriesId') categoriesId: string,
     @Body() updateData: UpdateCategoryDto,
   ) {
-    return this.categoryService.update(tenantId, categoryId, updateData);
+    return this.categoryService.update(tenantId, categoriesId, updateData);
   }
 
-  @Delete(':id')
+  @Delete(':categoriesId')
   @ApiOperation({
     summary: 'Eliminar categoría',
     description: 'Elimina una categoría del tenant actual',
   })
   @ApiResponse({ status: 200, description: 'Categoría eliminada con éxito.' })
-  async remove(@TenantId() tenantId: string, @Param('id') id: string) {
-    return this.categoryService.remove(id, tenantId);
+  async deleteCategories(
+    @TenantId() tenantId: string,
+    @Param('categoriesId') categoriesId: string,
+  ) {
+    return this.categoryService.delete(tenantId, categoriesId);
   }
 }
